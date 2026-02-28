@@ -1,7 +1,7 @@
 {
   "name": "出勤クエスト",
   "short_name": "出勤クエスト",
-  "start_url": "./index.html",
+  "start_url": "./shukkin-quest-02.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
