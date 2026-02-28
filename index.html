@@ -335,15 +335,27 @@ let currentUser=null;
 let isAdmin=false;
 
 /* ===== サウンド ===== */
-
+const attackSound = new Audio("attack.mp3");
+const missSound = new Audio("miss.mp3");
 const cursorSound   = new Audio("cursor.mp3");
 const decisionSound = new Audio("decision.mp3");
 const battleEndSound = new Audio("battle_end.mp3");
 
+missSound.volume = 0.5;
 cursorSound.volume = 0.4;
 decisionSound.volume = 0.5;
 battleEndSound.volume = 0.6;
+attackSound.volume = 0.6;
 
+function playAttack(){
+  attackSound.currentTime = 0;
+  attackSound.play();
+}
+
+function playMiss(){
+  missSound.currentTime = 0;
+  missSound.play();
+}
 function playCursor(){
   cursorSound.currentTime = 0;
   cursorSound.play();
@@ -431,8 +443,9 @@ playDecision();
   isAdmin=false;
   ensureTodayRecord(code);
 if(!isShiftDay()){
-    alert("今日は出勤日ではないため、ポイントは加算されません。");
-  }
+  playMiss();
+  showDQMessage("きょうは やすみのひ だった！");
+}
   showEmployee();
 }
 
@@ -1075,10 +1088,10 @@ function playLevelUpSound(){
 function toggleQuest(id){
 
   if(!isShiftDay()){
-    showSimpleNotice("今日は出勤日ではありません");
-    return;
-  }
-
+  playMiss();  // ← ミス音
+  showDQMessage("しかし こうげきは あたらなかった！");
+  return;
+}
   const rec = state.today.progress[currentUser];
   if(rec.checked[id]) return;
 
@@ -1087,26 +1100,35 @@ function toggleQuest(id){
 
   const emp = state.employees[currentUser];
 
-  const oldLevel = getLevelInfo(emp.totalEarned || 0).level;
+const newLevel = getLevelInfo(emp.totalEarned).level;
 
-  rec.checked[id] = true;
-  rec.todayPoints += q.points;
+save();
+renderEmployee();
 
-  emp.totalPoints += q.points;
-  emp.totalEarned += q.points;
+// 全クエスト完了チェック
+const allDone = state.quests.every(q => rec.checked[q.id]);
 
-playBattleEnd();
+if(allDone){
 
-showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
+  // 戦闘終了音
+  playBattleEnd();
 
-  const newLevel = getLevelInfo(emp.totalEarned).level;
+  // 1.2秒後にレベルアップ判定
+  setTimeout(()=>{
+    if(newLevel > oldLevel){
+      showLevelUpPopup(newLevel);
+    }
+  }, 1200);
 
-  save();
-  renderEmployee();
+}else{
 
+  // 通常レベルアップ（途中レベルアップ）
   if(newLevel > oldLevel){
-    showLevelUpPopup(newLevel);
+    setTimeout(()=>{
+      showLevelUpPopup(newLevel);
+    }, 400);
   }
+
 }
 function showSimpleNotice(text){
 
