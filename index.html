@@ -187,47 +187,42 @@ button.warn{
 <main>
 <section id="viewLogin" class="card">
 
+  <!-- ロゴ -->
   <div class="login-logo">
     <img src="shukkin_logo.png" class="main-logo">
   </div>
 
   <!-- 入力エリア -->
   <div class="login-content">
-  <!-- タイトル画像 -->
- 
-
-  <!-- 左側：入力＋ログインボタン -->
-  <img src="shukkin_logo.png" class="main-logo">
-</div>
 
     <input id="loginCode"
            readonly
            placeholder="コードを入力"
            class="code-input"/>
 
- <button class="primary" onclick="login()">
-  ▶ ぼうけんを はじめる
-</button>
+    <button class="primary" onclick="login()">
+      ▶ ぼうけんを はじめる
+    </button>
+
   </div>
 
-  <!-- 右側：テンキー -->
+  <!-- テンキー -->
   <div class="keypad">
     <button onclick="addNum('1')">1</button>
     <button onclick="addNum('2')">2</button>
     <button onclick="addNum('3')">3</button>
-
     <button onclick="addNum('4')">4</button>
     <button onclick="addNum('5')">5</button>
     <button onclick="addNum('6')">6</button>
-
     <button onclick="addNum('7')">7</button>
     <button onclick="addNum('8')">8</button>
     <button onclick="addNum('9')">9</button>
-
     <button onclick="clearCode()">C</button>
     <button onclick="addNum('0')">0</button>
     <button onclick="backspace()">←</button>
   </div>
+
+</section>
 
 </section>
  <button class="ghost" onclick="seedDemo()">デモ初期化</button>
