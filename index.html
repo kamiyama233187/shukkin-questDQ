@@ -183,6 +183,41 @@ button.warn{
 
   /* ===== 下段横並び ===== */
   .login-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex: 1;
+  }
+
+  .login-left {
+    flex: 1;
+    max-width: 550px;
+  }
+
+  /* 入力を少し大きめ */
+  .code-input {
+    font-size: 28px;
+    padding: 14px;
+  }
+
+  button.primary {
+    font-size: 20px;
+    padding: 12px;
+  }
+
+  /* ===== テンキー小さく ===== */
+  .keypad {
+    width: 260px;   /* ← 小さくした */
+    gap: 6px;
+  }
+
+  .keypad button {
+    font-size: 18px;
+    aspect-ratio: 1 / 1;
+  }
+
+}
 
 </style>
 </head>
