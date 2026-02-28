@@ -9,6 +9,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>出勤クエスト</title>
 <style>
+#viewLogin,
+#viewEmployee,
+#viewAdmin {
+  position: absolute;
+  top: 60px; /* header分 */
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow: auto;
+}
 /* ログイン画面全体を縦中央配置 */
 #viewLogin{
   display:flex;
