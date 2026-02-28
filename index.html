@@ -9,6 +9,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>出勤クエスト</title>
 <style>
+main {
+  position: relative;
+}
 #viewLogin,
 #viewEmployee,
 #viewAdmin {
@@ -19,6 +22,7 @@
   height: calc(100vh - 60px);
   overflow: auto;
 }
+
 /* ログイン画面全体を縦中央配置 */
 #viewLogin{
   display:flex;
@@ -247,6 +251,7 @@ button.warn{
 <main>
 <section id="viewLogin" class="card">
 
+
   <!-- ロゴ -->
   <div class="login-logo">
     <img src="shukkin_logo.png" class="main-logo">
@@ -279,13 +284,8 @@ button.warn{
     <button onclick="clearCode()">C</button>
     <button onclick="addNum('0')">0</button>
     <button onclick="backspace()">←</button>
-  </div>
-
-</section>
-
-</section>
- <button class="ghost" onclick="seedDemo()">デモ初期化</button>
-  </div>
+  　</div>
+</div>
 </section>
   <!-- Employee -->
   <section id="viewEmployee" class="hidden">
