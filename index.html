@@ -7,45 +7,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>出勤クエスト</title>
 <style>
-body{
-  background:#000;
-  color:#fff;
-  font-family:"MS Gothic", monospace;
-}
-
-.card{
-  background:#000;
-  border:3px solid #fff;
-  border-radius:0;
-  box-shadow:none;
-}
-
-button{
-  background:#000;
-  color:#fff;
-  border:2px solid #fff;
-  border-radius:0;
-}
-
-button.primary{
-  background:#1e3a8a;
-  border:2px solid #fff;
-}
-
-button.warn{
-  background:#7f1d1d;
-}
-
-.badge{
-  background:#fff;
-  color:#000;
-  border-radius:0;
-}
-
-.item{
-  border-bottom:1px solid #555;
-  padding:6px 0;
-}
+  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background:#0f172a; color:#e5e7eb;}
+  header { background:#020617; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;}
+  h1 { font-size:18px; margin:0; }
+  main { padding:16px; }
+  .card { background:#020617; border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:0 10px 20px rgba(0,0,0,.25); }
+  input, button { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; }
+  button.primary { background:#2563eb; border-color:#2563eb; }
+  button.warn { background:#7c2d12; border-color:#7c2d12; }
+  button.ghost { background:#020617; }
+  .row { display:flex; gap:8px; }
+  .row > * { flex:1; }
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; border-radius:10px; background:#020617; border:1px solid #1f2937;}
   .muted { color:#9ca3af; }
   .badge { background:#1f2937; padding:4px 8px; border-radius:999px; }
   .topstats { display:flex; gap:8px; }
@@ -77,16 +51,71 @@ button.warn{
 .keypad button:active {
   transform: scale(0.95);
 }
+/* ===== ドラクエ風基本 ===== */
 
-#expBar{
-  background: repeating-linear-gradient(
-    90deg,
-    #1e3a8a,
-    #1e3a8a 6px,
-    #2563eb 6px,
-    #2563eb 12px
-  );
+body{
+  background:#000;
+  color:#fff;
+  font-family:"MS Gothic", monospace;
+  font-size:16px;
+  letter-spacing:1px;
 }
+
+.card{
+  background:#000;
+  border:3px solid #fff;
+  border-radius:0;
+  box-shadow:none;
+  padding:12px;
+}
+
+button{
+  background:#000;
+  color:#fff;
+  border:2px solid #fff;
+  border-radius:0;
+  padding:6px 10px;
+}
+
+button.primary{
+  background:#000;
+}
+
+button.warn{
+  background:#000;
+}
+
+.badge{
+  background:#000;
+  color:#fff;
+  border:1px solid #fff;
+  border-radius:0;
+}
+
+.item{
+  padding:4px 0;
+  border-bottom:1px solid #333;
+}
+
+/* 経験値バー */
+#expBar{
+  background:#fff;
+}
+
+/* メッセージウィンドウ */
+#dqMessage{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  max-width:480px;
+  background:#000;
+  border:3px solid #fff;
+  padding:16px;
+  z-index:9999;
+}
+
 /* 横画面用レイアウト */
 @media (orientation: landscape) {
 
@@ -135,9 +164,9 @@ alt="出勤クエスト"
            placeholder="コードを入力"
            class="code-input"/>
 
-    <button class="primary" onclick="login()">
-      ▶ ぼうけんをはじめる
-    </button>
+ <button class="primary" onclick="login()">
+  ▶ ぼうけんを はじめる
+</button>
   </div>
 
   <!-- 右側：テンキー -->
@@ -305,6 +334,30 @@ let state = {
 let currentUser=null;
 let isAdmin=false;
 
+/* ===== サウンド ===== */
+
+const cursorSound   = new Audio("cursor.mp3");
+const decisionSound = new Audio("decision.mp3");
+const battleEndSound = new Audio("battle_end.mp3");
+
+cursorSound.volume = 0.4;
+decisionSound.volume = 0.5;
+battleEndSound.volume = 0.6;
+
+function playCursor(){
+  cursorSound.currentTime = 0;
+  cursorSound.play();
+}
+
+function playDecision(){
+  decisionSound.currentTime = 0;
+  decisionSound.play();
+}
+
+function playBattleEnd(){
+  battleEndSound.currentTime = 0;
+  battleEndSound.play();
+}
 /* ================= UTIL ================= */
 
 function todayStr(){
@@ -359,6 +412,7 @@ function ensureTodayRecord(code){
 /* ================= LOGIN ================= */
 
 function login(){
+playDecision();
   const code=document.getElementById("loginCode").value.trim();
   if(!code) return alert("コードを入力してください");
 
@@ -490,7 +544,7 @@ if(done){
   btn.className="ghost";
   btn.disabled=true;
 }else{
-  btn.textContent="チェック";
+  btn.textContent="たたかう";
   btn.className="primary";
   btn.disabled=false;
 }
@@ -790,9 +844,20 @@ function addManualShift(){
 
 /* ================= KEYPAD ================= */
 
-function addNum(n){document.getElementById("loginCode").value+=n;}
-function clearCode(){document.getElementById("loginCode").value="";}
+/* ===== KEYPAD ===== */
+
+function addNum(n){
+  playCursor();  // ←追加
+  document.getElementById("loginCode").value+=n;
+}
+
+function clearCode(){
+  playCursor();  // ←追加
+  document.getElementById("loginCode").value="";
+}
+
 function backspace(){
+  playCursor();  // ←追加
   const input=document.getElementById("loginCode");
   input.value=input.value.slice(0,-1);
 }
@@ -994,39 +1059,19 @@ function showLevelUpPopup(level){
 
   playLevelUpSound();
 
-  const popup = document.createElement("div");
-
-  popup.style.position="fixed";
-  popup.style.bottom="40px";
-  popup.style.left="50%";
-  popup.style.transform="translateX(-50%)";
-  popup.style.background="#000";
-  popup.style.color="#fff";
-  popup.style.border="3px solid #fff";
-  popup.style.padding="16px";
-  popup.style.width="80%";
-  popup.style.maxWidth="400px";
-  popup.style.fontFamily="monospace";
-  popup.style.fontSize="18px";
-  popup.style.zIndex="9999";
-
-  popup.innerHTML =
-    `レベルが あがった！<br>
-     Lv.${level} に なった！`;
-
-  document.body.appendChild(popup);
-
-  setTimeout(()=>{
-    popup.remove();
-  },2500);
+  showDQMessage(`レベルが あがった！\nLv.${level} に なった！`);
 }
 function playLevelUpSound(){
 
-  const audio = new Audio(levelup.mp3);
+  const audio = new Audio("levelup.mp3");
 
-  audio.volume = 0.75;
-  audio.play();
+  audio.volume = 0.7;
+
+  audio.play().catch(err=>{
+    console.log("音再生エラー", err);
+  });
 }
+
 function toggleQuest(id){
 
   if(!isShiftDay()){
@@ -1049,6 +1094,10 @@ function toggleQuest(id){
 
   emp.totalPoints += q.points;
   emp.totalEarned += q.points;
+
+playBattleEnd();
+
+showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
 
   const newLevel = getLevelInfo(emp.totalEarned).level;
 
@@ -1079,6 +1128,22 @@ function showSimpleNotice(text){
   setTimeout(()=>{
     notice.remove();
   },2000);
+}
+function showDQMessage(text){
+
+  const old = document.getElementById("dqMessage");
+  if(old) old.remove();
+
+  const box = document.createElement("div");
+  box.id="dqMessage";
+
+  box.innerHTML = text.replace(/\n/g,"<br>");
+
+  document.body.appendChild(box);
+
+  setTimeout(()=>{
+    box.remove();
+  },3000);
 }
 </script>
 </body>
