@@ -1103,48 +1103,56 @@ function toggleQuest(id){
 
   const oldLevel = getLevelInfo(emp.totalEarned || 0).level;
 
-  // 攻撃音
+  // 🗡 攻撃音
   playAttack();
 
-  // クエスト達成処理
-  rec.checked[id] = true;
-  rec.todayPoints += q.points;
+  // 攻撃後 0.5秒待つ
+  setTimeout(()=>{
 
-  emp.totalPoints += q.points;
-  emp.totalEarned += q.points;
+    // クエスト達成処理
+    rec.checked[id] = true;
+    rec.todayPoints += q.points;
 
-  const newLevel = getLevelInfo(emp.totalEarned).level;
+    emp.totalPoints += q.points;
+    emp.totalEarned += q.points;
 
-  save();
-  renderEmployee();
+    const newLevel = getLevelInfo(emp.totalEarned).level;
 
-  showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
+    save();
+    renderEmployee();
 
-  // 全クエスト完了チェック
-  const allDone = state.quests.every(q => rec.checked[q.id]);
+    showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
 
-  if(allDone){
+    const allDone = state.quests.every(q => rec.checked[q.id]);
 
-    playBattleEnd();
+    if(allDone){
 
-    setTimeout(()=>{
-      if(newLevel > oldLevel){
-        showLevelUpPopup(newLevel);
-      }
-    },1200);
-
-  }else{
-
-    if(newLevel > oldLevel){
+      // 💥 戦闘終了音も少し間をあける
       setTimeout(()=>{
-        showLevelUpPopup(newLevel);
-      },400);
+        playBattleEnd();
+
+        // 勝利音後さらに間
+        setTimeout(()=>{
+          if(newLevel > oldLevel){
+            showLevelUpPopup(newLevel);
+          }
+        },1000);
+
+      },500);
+
+    }else{
+
+      if(newLevel > oldLevel){
+        setTimeout(()=>{
+          showLevelUpPopup(newLevel);
+        },700);
+      }
+
     }
 
-  }
-
-
+  },500);
 }
+
 function showSimpleNotice(text){
 
   const notice = document.createElement("div");
