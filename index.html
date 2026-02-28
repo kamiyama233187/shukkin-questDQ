@@ -1088,10 +1088,11 @@ function playLevelUpSound(){
 function toggleQuest(id){
 
   if(!isShiftDay()){
-  playMiss();  // ← ミス音
-  showDQMessage("しかし こうげきは あたらなかった！");
-  return;
-}
+    playMiss();
+    showDQMessage("しかし こうげきは あたらなかった！");
+    return;
+  }
+
   const rec = state.today.progress[currentUser];
   if(rec.checked[id]) return;
 
@@ -1100,34 +1101,48 @@ function toggleQuest(id){
 
   const emp = state.employees[currentUser];
 
-const newLevel = getLevelInfo(emp.totalEarned).level;
+  const oldLevel = getLevelInfo(emp.totalEarned || 0).level;
 
-save();
-renderEmployee();
+  // 攻撃音
+  playAttack();
 
-// 全クエスト完了チェック
-const allDone = state.quests.every(q => rec.checked[q.id]);
+  // クエスト達成処理
+  rec.checked[id] = true;
+  rec.todayPoints += q.points;
 
-if(allDone){
+  emp.totalPoints += q.points;
+  emp.totalEarned += q.points;
 
-  // 戦闘終了音
-  playBattleEnd();
+  const newLevel = getLevelInfo(emp.totalEarned).level;
 
-  // 1.2秒後にレベルアップ判定
-  setTimeout(()=>{
-    if(newLevel > oldLevel){
-      showLevelUpPopup(newLevel);
-    }
-  }, 1200);
+  save();
+  renderEmployee();
 
-}else{
+  showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
 
-  // 通常レベルアップ（途中レベルアップ）
-  if(newLevel > oldLevel){
+  // 全クエスト完了チェック
+  const allDone = state.quests.every(q => rec.checked[q.id]);
+
+  if(allDone){
+
+    playBattleEnd();
+
     setTimeout(()=>{
-      showLevelUpPopup(newLevel);
-    }, 400);
+      if(newLevel > oldLevel){
+        showLevelUpPopup(newLevel);
+      }
+    },1200);
+
+  }else{
+
+    if(newLevel > oldLevel){
+      setTimeout(()=>{
+        showLevelUpPopup(newLevel);
+      },400);
+    }
+
   }
+
 
 }
 function showSimpleNotice(text){
