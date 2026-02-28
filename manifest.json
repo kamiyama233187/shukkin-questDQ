@@ -1,9 +1,10 @@
 {
   "name": "出勤クエスト",
   "short_name": "出勤クエスト",
-  "start_url": ".",
+  "start_url": "/shukkin-questDQ/",
+  "scope": "/shukkin-questDQ/",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#000000",
   "theme_color": "#0f172a",
   "icons": [
     {
