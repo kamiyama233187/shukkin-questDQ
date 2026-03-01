@@ -1107,7 +1107,7 @@ function isShiftDay(){
   const emp = state.employees[currentUser];
   if(!emp || !emp.shiftName) return false;
 
-  const today = new Date().toISOString().slice(0,3).replace(/-/g,"/");
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,"/");
   const name = emp.shiftName.trim();
 
   // ① 手動優先
@@ -1170,7 +1170,7 @@ function renderExchangeHistory(){
   // 新しい順に表示
 const reversed = [...state.exchangeHistory]
   .reverse()
-  .slice(0,10);
+  .slice(0,3);
 
   reversed.forEach(h=>{
     const row = document.createElement("div");
