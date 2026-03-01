@@ -575,7 +575,10 @@ function login(){
   playDecision();
 
   const code = document.getElementById("loginCode").value.trim();
-  if(!code) return alert("コードを入力してください");
+  if(!code){
+  showDQMessage("コードを いれてください！");
+  return;
+}
 
   if(code === ADMIN_CODE){
     isAdmin = true;
@@ -584,9 +587,8 @@ function login(){
     return;
   }
 
-  if(!state.employees[code]){
-    return alert("登録されていません");
-  }
+  showDQMessage("その ぼうけんしゃは いません！");
+return;
 
   currentUser = code;
   isAdmin = false;
@@ -979,8 +981,9 @@ function exchangeReward(id){
   const emp = state.employees[currentUser];
 
   if(emp.totalPoints < r.cost){
-    return alert("ポイントが不足しています");
-  }
+  showDQMessage("ポイントが たりない！");
+  return;
+}
 
   if(!confirm(`${r.title} を交換しますか？`)) return;
 
@@ -996,7 +999,9 @@ function exchangeReward(id){
 
   save();
   renderEmployee();
-  alert("交換しました！");
+  showDQMessage(
+  `${r.title} を てにいれた！`
+);
 }
 
 /* ================= CSV ================= */
@@ -1163,7 +1168,9 @@ function renderExchangeHistory(){
   }
 
   // 新しい順に表示
-  const reversed = [...state.exchangeHistory].reverse();
+const reversed = [...state.exchangeHistory]
+  .reverse()
+  .slice(0,10);
 
   reversed.forEach(h=>{
     const row = document.createElement("div");
