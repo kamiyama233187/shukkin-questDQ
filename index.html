@@ -345,6 +345,7 @@ input{
       <button onclick="showTab('adminQuests')">クエスト</button>
       <button onclick="showTab('adminRewards')">景品</button>
       <button onclick="showTab('adminData')">データ</button>
+<button onclick="showTab('adminHistory')">履歴</button>
     </div>
 
     <div style="margin-top:10px;">
@@ -449,7 +450,10 @@ input{
       <button onclick="exportExchangeHistoryCSV()">履歴CSV出力</button>
     </div>
 <hr style="margin:20px 0;">
-
+<div id="adminHistory" class="card hidden">
+  <h3>日別履歴</h3>
+  <div id="historyList" class="list"></div>
+</div>
 <h3>手動シフト追加（救済用）</h3>
 
 <div class="row">
@@ -483,6 +487,7 @@ let state = {
   shiftTable:{},
   shiftOverrides:{},   // ← カンマ必要
   exchangeHistory:[]
+history:{},
 };
 
 let currentUser=null;
@@ -639,8 +644,9 @@ function showAdmin(){
   show("viewAdmin");
   showTab("adminEmployees");
   renderAdmin();
-renderExchangeHistory();
+  renderExchangeHistory();
   renderRanking();
+  renderHistory();   // ←追加
 }
 
 function showEmployee(){
@@ -650,7 +656,7 @@ function showEmployee(){
 }
 
 function showTab(id){
-  ["adminEmployees","adminQuests","adminRewards","adminData"].forEach(t=>{
+ ["adminEmployees","adminQuests","adminRewards","adminData","adminHistory"].forEach(t=>{
     const el=document.getElementById(t);
     if(el) el.classList.add("hidden");
   });
@@ -1038,8 +1044,25 @@ function loadShiftCSV(file){
 /* ================= DATA ================= */
 
 function resetToday(ask=true){
-  if(ask&&!confirm("リセットしますか？")) return;
-  state.today={date:todayStr(),progress:{}};
+
+  if(ask && !confirm("リセットしますか？")) return;
+
+  const oldDate = state.today?.date;
+
+  if(oldDate && state.today.progress){
+
+    // 今日のデータを履歴に保存
+    state.history[oldDate] = JSON.parse(
+      JSON.stringify(state.today.progress)
+    );
+  }
+
+  // 新しい日付に切り替え
+  state.today = {
+    date: todayStr(),
+    progress:{}
+  };
+
   save();
 }
 
@@ -1189,6 +1212,107 @@ const reversed = [...state.exchangeHistory]
     list.appendChild(row);
   });
 }
+function getWeekday(dateStr){
+
+  const d = new Date(dateStr);
+  const days = ["日","月","火","水","木","金","土"];
+
+  return days[d.getDay()];
+}
+
+function renderHistory(){
+
+  const container = document.getElementById("historyList");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  const dates = Object.keys(state.history)
+  .sort()
+  .reverse()
+  .slice(0,3);
+
+  if(!dates.length){
+    container.innerHTML = "<div>履歴はまだありません</div>";
+    return;
+  }
+
+  dates.forEach(date=>{
+
+    const weekday = getWeekday(date);
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `<strong>${date}（${weekday}）</strong>`;
+
+    const dayData = state.history[date];
+let totalEmployees = 0;
+let fullClearCount = 0;
+
+ Object.entries(dayData).forEach(([code,rec])=>{
+
+  totalEmployees++;
+
+  const emp = state.employees[code];
+  const name = emp ? emp.name : code;
+
+  const empDiv = document.createElement("div");
+  empDiv.style.marginTop="8px";
+
+  let fullClear = true;
+
+  state.quests.forEach(q=>{
+    const done = rec.checked[q.id];
+    if(!done) fullClear = false;
+  });
+
+  if(fullClear){
+    fullClearCount++;
+  }
+
+  empDiv.innerHTML += `<div><strong>${name}</strong></div>`;
+
+  state.quests.forEach(q=>{
+    const done = rec.checked[q.id];
+    empDiv.innerHTML += `
+      <div>
+        ${done ? "✅" : "❌"} ${q.title}
+      </div>
+    `;
+  });
+
+  empDiv.innerHTML += `
+    <div>全制覇：${fullClear ? "🏆 YES" : "ー"}</div>
+  `;
+
+  card.appendChild(empDiv);
+
+});   // ← ここでループ終了
+
+
+
+// ⭐⭐ ここからが外 ⭐⭐
+
+if(totalEmployees > 0){
+
+  const rate = Math.round(
+    (fullClearCount / totalEmployees) * 100
+  );
+
+  const rateDiv = document.createElement("div");
+  rateDiv.style.marginTop = "10px";
+
+  rateDiv.innerHTML =
+    `<strong>全制覇率：${rate}%（${fullClearCount}/${totalEmployees}人）</strong>`;
+
+  card.appendChild(rateDiv);
+}
+
+    container.appendChild(card);
+  });
+}
+
 function exportExchangeHistoryCSV(){
 
   if(!state.exchangeHistory.length){
@@ -1452,12 +1576,12 @@ function getNextLevelRequirement(total){
 function getTitle(level){
 
   if(level >= 90) return "伝説の勇者";
-  if(level >= 70) return "店舗の守護神";
-  if(level >= 50) return "超ベテラン";
-  if(level >= 30) return "熟練クルー";
-  if(level >= 10) return "一人前戦士";
+  if(level >= 70) return "熟練勇者";
+  if(level >= 50) return "噂の勇者";
+  if(level >= 30) return "1人前勇者";
+  if(level >= 10) return "半人前勇者";
 
-  return "新人クルー";
+  return "見習い勇者";
 }
 function confirmFullReset(){
 
