@@ -461,7 +461,13 @@ input{
   <button onclick="addManualShift()">この日を出勤扱いにする</button>
 </div>
   </div>
+<hr style="margin:20px 0;">
+<h3 style="color:#f66;">危険操作</h3>
 
+<button onclick="confirmFullReset()" 
+        style="background:#300; border-color:#f00; color:#f88;">
+  ⚠ 全データ削除
+</button>
 </section>
 <script>
 const ADMIN_CODE = "3963233187";
@@ -1454,6 +1460,45 @@ function getTitle(level){
   if(level >= 10) return "一人前戦士";
 
   return "新人クルー";
+}
+function confirmFullReset(){
+
+  // 管理者コード再入力
+  const input = prompt("かんりしゃコードを いれてください");
+
+  if(input !== ADMIN_CODE){
+    showDQMessage("じゅもんが ちがう！");
+    return;
+  }
+
+  // 1回目確認
+  if(!confirm("ほんとうに すべてのデータを けしますか？")){
+    return;
+  }
+
+  // 2回目確認
+  if(!confirm("さいごの かくにんです。\nぜんぶ きえてしまいます！")){
+    return;
+  }
+
+  // データ削除
+  localStorage.removeItem(STORAGE_KEY);
+
+  state = {
+    employees:{},
+    quests:[],
+    rewards:[],
+    today:{date:todayStr(),progress:{}},
+    shiftTable:{},
+    shiftOverrides:{},
+    exchangeHistory:[]
+  };
+
+  showDQMessage("すべての データが きえた…");
+
+  setTimeout(()=>{
+    location.reload();
+  },1500);
 }
 </script>
 </body>
