@@ -586,10 +586,10 @@ function login(){
     showAdmin();
     return;
   }
-
+if(!state.employees[code]){
   showDQMessage("その ぼうけんしゃは いません！");
 return;
-
+}
   currentUser = code;
   isAdmin = false;
 
