@@ -662,6 +662,9 @@ function showTab(id){
     if(el) el.classList.add("hidden");
   });
   document.getElementById(id).classList.remove("hidden");
+ if(id === "adminHistory"){
+    renderHistory();
+  }
 }
 
 /* ================= EMPLOYEE ================= */
@@ -1577,12 +1580,12 @@ function getNextLevelRequirement(total){
 function getTitle(level){
 
   if(level >= 90) return "伝説の勇者";
-  if(level >= 70) return "熟練勇者";
-  if(level >= 50) return "噂の勇者";
-  if(level >= 30) return "1人前勇者";
-  if(level >= 10) return "半人前勇者";
+  if(level >= 70) return "勇者";
+  if(level >= 50) return "見習い勇者";
+  if(level >= 30) return "勇者の卵";
+  if(level >= 10) return "期待の冒険者";
 
-  return "見習い勇者";
+  return "見習い冒険者";
 }
 function confirmFullReset(){
 
@@ -1590,7 +1593,7 @@ function confirmFullReset(){
   const input = prompt("かんりしゃコードを いれてください");
 
   if(input !== ADMIN_CODE){
-    showDQMessage("じゅもんが ちがう！");
+    showDQMessage("じゅもんが ちがいます");
     return;
   }
 
