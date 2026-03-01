@@ -567,6 +567,7 @@ Object.values(state.employees).forEach(emp=>{
   if(!state.shiftTable) state.shiftTable = {};
   if(!state.shiftOverrides) state.shiftOverrides = {};
   if(!state.exchangeHistory) state.exchangeHistory = [];
+if(!state.history) state.history = {};
 
   // 日付更新チェック
   if(!state.today || state.today.date !== todayStr()){
