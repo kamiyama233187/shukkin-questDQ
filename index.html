@@ -1260,32 +1260,30 @@ function renderEmployeeRanking(){
     container.appendChild(row);
   });
 }
-function getLevelInfo(totalPoints){
 
-  if(totalPoints >= 1000){
-    return {level:5, title:"店舗の守護神"};
-  }
-  if(totalPoints >= 600){
-    return {level:4, title:"前陳の達人"};
-  }
-  if(totalPoints >= 300){
-    return {level:3, title:"清掃マスター"};
-  }
-  if(totalPoints >= 100){
-    return {level:2, title:"見習い戦士"};
+function getLevelInfo(total){
+
+  let level = 1;
+
+  for(let i=1;i<=99;i++){
+    if(total >= getRequiredExp(i)){
+      level = i;
+    }else{
+      break;
+    }
   }
 
-  return {level:1, title:"新人クルー"};
+  return {
+    level: level,
+    title: getTitle(level)
+  };
 }
-function getNextLevelRequirement(total){
 
-  if(total < 100) return 100;
-  if(total < 300) return 300;
-  if(total < 600) return 600;
-  if(total < 1000) return 1000;
-
-  return null; // 最大レベル
+function getRequiredExp(level){
+  return level * level * 10;
 }
+
+
 function showLevelUpPopup(level){
 
   playLevelUpSound();
@@ -1422,6 +1420,25 @@ playCursor();
 }
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
+}
+
+function getNextLevelRequirement(total){
+
+  const info = getLevelInfo(total);
+
+  if(info.level >= 99) return null;
+
+  return getRequiredExp(info.level + 1);
+}
+function getTitle(level){
+
+  if(level >= 90) return "伝説の勇者";
+  if(level >= 70) return "店舗の守護神";
+  if(level >= 50) return "超ベテラン";
+  if(level >= 30) return "熟練クルー";
+  if(level >= 10) return "一人前戦士";
+
+  return "新人クルー";
 }
 </script>
 </body>
