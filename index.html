@@ -1,150 +1,105 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="icon" href="./icon-512.png">
-<meta name="theme-color" content="#0f172a">
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>出勤クエスト</title>
+
 <style>
-main {
-  position: relative;
+.hidden{
+  display:none !important;
 }
-#viewLogin {
-  overflow: hidden;   /* ← ログインだけ固定 */
-display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  align-items:center;
-  height:100%;
-  padding:10px 20px;   /* 余白を小さく */
-}
-
 #viewEmployee,
-#viewAdmin {
-  overflow: auto;     /* ← 他はスクロールOK */
+#viewAdmin{
+  padding:12px;
 }
-
-/* ロゴ大きく */
-.login-logo{
-  text-align:center;
-  margin-bottom:60px;
-}
-
-/* 入力部分を少し下に */
-.login-content{
-  margin-top:20px;
-}
-.login-header{
-  text-align:center;
-  margin-bottom:20px;
-}
-
-.main-logo{
-  width:100%;
-  max-height:30vh;   /* ← これが超重要 */
-  object-fit:contain;
-  image-rendering:pixelated;
-  margin:0;
-}
-  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background:#0f172a; color:#e5e7eb;}
-  header { background:#020617; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;}
-  h1 { font-size:18px; margin:0; }
-  main { padding:0px; }
-  .card { background:#020617; border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:0 10px 20px rgba(0,0,0,.25); }
-  input, button { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; }
-  button.primary { background:#2563eb; border-color:#2563eb; }
-  button.warn { background:#7c2d12; border-color:#7c2d12; }
-  button.ghost { background:#020617; }
-  .row { display:flex; gap:8px; }
-  .row > * { flex:1; }
-  .list { display:flex; flex-direction:column; gap:8px; }
-  .item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; border-radius:10px; background:#020617; border:1px solid #1f2937;}
-  .muted { color:#9ca3af; }
-  .badge { background:#1f2937; padding:4px 8px; border-radius:999px; }
-  .topstats { display:flex; gap:8px; }
-  .topstats .card { flex:1; text-align:center; }
-  .hidden { display:none; }
-  .danger { color:#fca5a5; }
-  footer { padding:12px 16px; color:#9ca3af; text-align:center; }
-.code-input {
-  width: 100%;
-  font-size: 24px;
-  text-align: center;
-  margin-bottom: 12px;
-  padding: 12px;
-}
-
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.keypad button {
-  aspect-ratio: 1 / 1;   /* 完全な正方形 */
-  font-size: 22px;
-  border-radius: 8px;    /* 角を少し丸める */
-  font-weight: bold;
-}
-
-.keypad button:active {
-  transform: scale(0.95);
-}
-/* ===== ドラクエ風基本 ===== */
-
 body{
+  margin:0;
+  padding:12px;
   background:#000;
   color:#fff;
   font-family:"MS Gothic", monospace;
-  font-size:16px;
+}
+
+#viewLogin{
+  height:calc(100vh - 24px);
+  border:3px solid #fff;
+}
+/* =============================
+   出勤クエスト 完全CSS版
+============================= */
+
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  height:100%;
+  background:#000;
+  color:#fff;
+  font-family:"MS Gothic", monospace;
   letter-spacing:1px;
+}
+
+/* =============================
+   共通UI
+============================= */
+
+.hidden{
+  display:none;
 }
 
 .card{
   background:#000;
   border:3px solid #fff;
-  border-radius:0;
-  box-shadow:none;
   padding:12px;
+  margin-bottom:12px;
 }
 
 button{
   background:#000;
   color:#fff;
   border:2px solid #fff;
-  border-radius:0;
-  padding:6px 10px;
+  padding:8px;
+  cursor:pointer;
 }
 
-button.primary{
-  background:#000;
-}
-
-button.warn{
-  background:#000;
+button:active{
+  transform:scale(0.95);
 }
 
 .badge{
-  background:#000;
-  color:#fff;
   border:1px solid #fff;
-  border-radius:0;
+  padding:2px 6px;
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
 .item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   padding:4px 0;
-  border-bottom:1px solid #333;
 }
 
-/* 経験値バー */
-#expBar{
-  background:#fff;
+.row{
+  display:flex;
+  gap:8px;
 }
 
-/* メッセージウィンドウ */
+.row > *{
+  flex:1;
+}
+
+/* =============================
+   メッセージウィンドウ
+============================= */
+
 #dqMessage{
   position:fixed;
   bottom:20px;
@@ -158,255 +113,365 @@ button.warn{
   z-index:9999;
 }
 
-/* 横画面用レイアウト */
-@media (orientation: landscape) {
+/* =============================
+   経験値バー
+============================= */
 
-  #viewLogin {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 90vh;
-    padding: 10px 20px;
-  }
-
-  /* ===== ロゴを枠いっぱい ===== */
-  .login-logo {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-/* ===== 横画面ロゴ最大化 ===== */
-.main-logo {
-  width: 100% !important;
-  max-width: none !important;
-  max-height: 30vh;
-  object-fit: contain;
+#expBarWrap{
+  height:14px;
+  border:1px solid #fff;
+  margin-top:6px;
 }
 
- .main-logo{
+#expBar{
+  height:100%;
+  width:0%;
+  background:#fff;
+  transition:0.4s;
+}
+
+/* =============================
+   ログイン画面
+============================= */
+
+#viewLogin{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:20px;
+  overflow:hidden;
+}
+
+.main-logo{
   width:100%;
   max-height:35vh;
   object-fit:contain;
   image-rendering:pixelated;
-  display:block;
 }
 
-  /* ===== 下段横並び ===== */
-.login-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 30px;
-  flex: 1;
-  width: 100%;
+/* 下段 */
+.login-bottom{
+  display:flex;
+  gap:3vw;
+  align-items:stretch;
+  flex:1;
 }
 
-  .login-left {
-    flex: 1;
-    max-width: 550px;
-  }
-
-  /* 入力を少し大きめ */
-  .code-input {
-    font-size: 28px;
-    padding: 14px;
-  }
-
-  button.primary {
-    font-size: 20px;
-    padding: 12px;
-  }
-
-  /* ===== テンキー小さく ===== */
- .keypad {
-  width: 28vw;        /* 画面幅の28% */
-  max-width: 260px;   /* 大きくなりすぎ防止 */
+/* 左側（入力） */
+.login-left{
+  flex:1;
+  max-width:600px;
 }
 
-  .keypad button {
-    font-size: 18px;
-    aspect-ratio: 1 / 1;
-  }
-
+.code-input{
+  width:100%;
+  font-size:clamp(20px,3vw,32px);
+  text-align:center;
+  margin-bottom:12px;
+  padding:10px;
+  background:#000;
+  border:2px solid #fff;
+  color:#fff;
 }
 
+/* テンキー */
+.keypad{
+  width:35%;
+  max-width:400px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1vw;
+}
+
+.keypad button{
+  aspect-ratio:1/1;
+  font-size:clamp(16px,2vw,26px);
+}
+
+/* =============================
+   従業員画面
+============================= */
+
+#viewEmployee{
+  padding:16px;
+  overflow:auto;
+}
+
+.topstats{
+  display:flex;
+  gap:12px;
+}
+
+.topstats .card{
+  flex:1;
+  text-align:center;
+}
+
+/* =============================
+   管理画面
+============================= */
+
+#viewAdmin{
+  padding:16px;
+  overflow:auto;
+}
+
+input{
+  background:#000;
+  border:2px solid #fff;
+  color:#fff;
+  padding:6px;
+}
+
+/* =============================
+   横画面最適化
+============================= */
+
+@media (orientation: landscape){
+
+  #viewLogin{
+    padding:20px 40px;
+  }
+
+  .main-logo{
+    max-height:40vh;
+  }
+
+  .login-bottom{
+    align-items:center;
+  }
+
+  .keypad{
+    width:30%;
+  }
+}
+
+/* =============================
+   縦画面簡易対応
+============================= */
+
+@media (orientation: portrait){
+
+  .login-bottom{
+    flex-direction:column;
+  }
+
+  .keypad{
+    width:100%;
+    max-width:none;
+  }
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>出勤クエスト</h1>
-  <div id="headerRight" class="muted"></div>
-</header>
 
-<main>
-<section id="viewLogin" class="card">
+<!-- ログイン -->
+<section id="viewLogin">
+  <img src="shukkin_logo.png" class="main-logo">
 
-
-  <!-- ロゴ -->
-  <div class="login-logo">
-    <img src="shukkin_logo.png" class="main-logo">
-  </div>
-
-  <!-- 下段：入力＋テンキー -->
   <div class="login-bottom">
-
     <div class="login-left">
-      <input id="loginCode"
-             readonly
-             placeholder="コードを入力"
-             class="code-input"/>
-
-      <button class="primary" onclick="login()">
-        ▶ ぼうけんを はじめる
-      </button>
+      <input id="loginCode" readonly class="code-input" placeholder="コードを入力">
+      <button onclick="login()">▶ ぼうけんを はじめる</button>
     </div>
 
     <div class="keypad">
-    <button onclick="addNum('1')">1</button>
-    <button onclick="addNum('2')">2</button>
-    <button onclick="addNum('3')">3</button>
-    <button onclick="addNum('4')">4</button>
-    <button onclick="addNum('5')">5</button>
-    <button onclick="addNum('6')">6</button>
-    <button onclick="addNum('7')">7</button>
-    <button onclick="addNum('8')">8</button>
-    <button onclick="addNum('9')">9</button>
-    <button onclick="clearCode()">C</button>
-    <button onclick="addNum('0')">0</button>
-    <button onclick="backspace()">←</button>
-  　</div>
-</div>
+      <button onclick="addNum('1')">1</button>
+      <button onclick="addNum('2')">2</button>
+      <button onclick="addNum('3')">3</button>
+      <button onclick="addNum('4')">4</button>
+      <button onclick="addNum('5')">5</button>
+      <button onclick="addNum('6')">6</button>
+      <button onclick="addNum('7')">7</button>
+      <button onclick="addNum('8')">8</button>
+      <button onclick="addNum('9')">9</button>
+      <button onclick="clearCode()">C</button>
+      <button onclick="addNum('0')">0</button>
+      <button onclick="backspace()">←</button>
+    </div>
+  </div>
 </section>
-  <!-- Employee -->
-  <section id="viewEmployee" class="hidden">
-    <div class="topstats">
-      <div class="card">
 
-  <div id="levelInfo" style="margin-top:8px;font-weight:bold;"></div>
-  <div id="expInfo" class="muted"></div>
-  <div id="nextLevelInfo" class="muted" style="margin-top:4px;"></div>
+<!-- 従業員 -->
+<section id="viewEmployee" class="hidden">
 
-  <div style="background:#1f2937;border-radius:999px;height:14px;margin-top:6px;overflow:hidden;">
-    <div id="expBar"
-         style="height:100%;width:0%;background:#2563eb;transition:width .4s;"></div>
+  <!-- ステータス -->
+<div class="card">
+  <div id="levelInfo"></div>
+  <div id="expInfo"></div>
+  <div id="nextLevelInfo"></div>
+
+  <div>今日のポイント：<span id="todayPoints">0</span></div>
+  <div>累計ポイント：<span id="totalPoints">0</span></div>
+
+  <div id="expBarWrap">
+    <div id="expBar"></div>
+  </div>
+</div>
+
+  <!-- タブボタン -->
+  <div class="card">
+    <div class="row">
+      <button onclick="showEmpTab('empQuest')">クエスト</button>
+      <button onclick="showEmpTab('empShop')">ポイント交換</button>
+      <button onclick="showEmpTab('empRanking')">ランキング</button>
+    </div>
   </div>
 
-  <div class="muted" style="margin-top:10px;">今日のポイント</div>
-  <div id="todayPoints" style="font-size:24px;">0</div>
+  <!-- ===== クエストタブ ===== -->
+  <div id="empQuest" class="card">
+    <h3>今日のクエスト</h3>
+    <div id="questList" class="list"></div>
+  </div>
 
-</div>
-      <div class="card">
-　  <h3>ポイント交換</h3>
-      <div id="rewardShop"></div>
-        <div class="muted">累計ポイント</div>
-        <div id="totalPoints" style="font-size:24px;">0</div>
-      </div>
+  <!-- ===== ショップタブ ===== -->
+  <div id="empShop" class="card hidden">
+    <h3>ポイント交換</h3>
+    <div id="rewardShop" class="list"></div>
+  </div>
+
+  <!-- ===== ランキングタブ ===== -->
+  <div id="empRanking" class="card hidden">
+    <h3>ランキング</h3>
+    <div id="rankingListEmployee" class="list"></div>
+  </div>
+
+  <div class="card">
+    <button onclick="logout()">ログアウト</button>
+  </div>
+
+</section>
+
+<section id="viewAdmin" class="hidden">
+
+  <!-- メニュー -->
+  <div class="card">
+    <h2>管理者メニュー</h2>
+
+    <div class="row">
+      <button onclick="showTab('adminEmployees')">従業員</button>
+      <button onclick="showTab('adminQuests')">クエスト</button>
+      <button onclick="showTab('adminRewards')">景品</button>
+      <button onclick="showTab('adminData')">データ</button>
     </div>
 
-    <div class="card">
-      <h3>今日のクエスト</h3>
-      <div id="questList" class="list"></div>
+    <div style="margin-top:10px;">
+      <button onclick="resetToday()">今日の進捗リセット</button>
+      <button onclick="logout()">ログアウト</button>
     </div>
-<div class="card">
-  <h3>ポイントランキング</h3>
-  <div id="rankingListEmployee" class="list"></div>
-</div>
+  </div>
 
-    <div class="card">
-      <button class="ghost" onclick="logout()">ログアウト</button>
-    </div>
-  </section>
+  <!-- =============================
+       従業員管理
+  ============================= -->
+  <div id="adminEmployees" class="card">
+    <h3>従業員管理</h3>
 
-  <!-- Admin -->
-  <section id="viewAdmin" class="hidden">
-    <div class="card">
-      <h3>管理者メニュー</h3>
-      <div class="row">
-        <button class="primary" onclick="showTab('adminEmployees')">従業員</button>
-        <button class="primary" onclick="showTab('adminQuests')">クエスト</button>
-<button onclick="showTab('adminRewards')">景品管理</button>
-        <button class="primary" onclick="showTab('adminData')">データ</button>
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="warn" onclick="resetToday()">今日の進捗リセット</button>
-        <button class="ghost" onclick="logout()">ログアウト</button>
-      </div>
-    </div>
-
-    <!-- Employees -->
-    <div id="adminEmployees" class="card hidden">
-      <h3>従業員管理</h3>
-      <div class="row">
-     <input id="empCode"
+    <div class="row">
+      <input id="empCode"
        type="tel"
        inputmode="numeric"
+       pattern="[0-9]*"
        maxlength="7"
        placeholder="従業員コード"
-       onkeydown="handleEmpCodeKey(event)" />
-       <input id="empName"
-       placeholder="名前"
-       onkeydown="handleEmpNameKey(event)" />
-<input id="empShiftName" placeholder="シフト表の苗字（例：山田）">
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="primary" onclick="addEmployee()">追加</button>
-      </div>
-      <div id="employeeList" class="list" style="margin-top:12px;"></div>
+       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+       onkeydown="handleEmpCodeKey(event)">
+      <input id="empName" placeholder="名前">
+      <input id="empShiftName" placeholder="シフト苗字">
     </div>
 
-    <!-- Quests -->
-    <div id="adminQuests" class="card hidden">
-      <h3>クエスト管理（全員共通）</h3>
-      <div class="row">
-        <input id="qTitle" placeholder="例：レジ周り清掃" />
-        <input id="qPoints" type="number" placeholder="ポイント" />
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="primary" onclick="addQuest()">追加</button>
-      </div>
-      <div id="questAdminList" class="list" style="margin-top:12px;"></div>
+    <div style="margin-top:10px;">
+      <button onclick="addEmployee()">追加</button>
     </div>
-<div id="adminRewards" class="card hidden">
 
-<h3>景品追加</h3>
-  <input id="rewardTitle" placeholder="景品名">
-  <input id="rewardCost" type="number" placeholder="必要ポイント">
-  <button onclick="addReward()">追加</button>
+    <div id="employeeList" class="list" style="margin-top:12px;"></div>
+  </div>
 
-  <div id="rewardAdminList"></div>
+  <!-- =============================
+       クエスト管理
+  ============================= -->
+  <div id="adminQuests" class="card hidden">
+    <h3>クエスト管理</h3>
 
-</div>
-    <!-- Data -->
-    <div id="adminData" class="card hidden">
-      <h3>データ管理</h3>
-      <button class="primary" onclick="exportData()">データ書き出し（JSON）</button>
-      <input id="importFile" type="file" accept="application/json" style="margin-top:8px;" />
-      <button class="ghost" style="margin-top:8px;" onclick="importData()">データ読み込み</button>
-      <p class="muted">※ 書き出したファイルをBluetooth/共有/USBでスマホへ。戻すときは読み込み。</p>
-<button onclick="exportEmployeesToCSV()">CSVエクスポート</button>
+    <div class="row">
+      <input id="qTitle" placeholder="クエスト名">
+      <input id="qPoints" type="number" placeholder="ポイント">
+    </div>
+
+    <div style="margin-top:10px;">
+      <button onclick="addQuest()">追加</button>
+    </div>
+
+    <div id="questAdminList" class="list" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- =============================
+       景品管理
+  ============================= -->
+  <div id="adminRewards" class="card hidden">
+    <h3>景品管理</h3>
+
+    <div class="row">
+      <input id="rewardTitle" placeholder="景品名">
+      <input id="rewardCost" type="number" placeholder="必要ポイント">
+    </div>
+
+    <div style="margin-top:10px;">
+      <button onclick="addReward()">追加</button>
+    </div>
+
+    <div id="rewardAdminList" class="list" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- =============================
+       データ管理
+  ============================= -->
+  <div id="adminData" class="card hidden">
+    <h3>データ管理</h3>
+
+    <button onclick="exportData()">JSON書き出し</button>
+    <input id="importFile" type="file" accept="application/json">
+    <button onclick="importData()">JSON読み込み</button>
+<hr style="margin:20px 0;">
+
+<h3>CSV機能</h3>
+
+<button onclick="exportEmployeesToCSV()">従業員CSV出力</button>
+
 <button onclick="openShiftCSV()">シフトCSV読み込み</button>
-<input id="shiftCsvInput" type="file" accept=".csv" style="display:none" onchange="loadShiftCSV(this.files[0])">
-<h3 style="margin-top:20px;">交換履歴</h3>
-<div id="exchangeHistoryList" class="list"></div>
- <button onclick="exportExchangeHistoryCSV()">交換履歴CSV出力</button>
-<!-- 手動シフト追加 -->
-<div class="card" style="margin-top:16px;">
-  <h3>手動シフト追加（救済用）</h3>
-  <div class="row">
-    <input id="manualShiftName" placeholder="シフト表の苗字（例：山田）" />
-    <input id="manualShiftDate" type="date" />
-  </div>
-  <div class="row" style="margin-top:8px;">
-    <button class="primary" onclick="addManualShift()">この日を出勤扱いにする</button>
-  </div>
-  <p class="muted">※ シフト表に無い日でも、この日を出勤扱いにできます</p>
-<h3 style="margin-top:20px;">ポイントランキング</h3>
-<div id="rankingList" class="list"></div>
-</div>
-  </section>
-</main>
+<input id="shiftCsvInput"
+       type="file"
+       accept=".csv"
+       style="display:none"
+       onchange="loadShiftCSV(this.files[0])">
 
-<footer>出勤クエスト（オフライン対応）</footer>
+<button onclick="exportExchangeHistoryCSV()">交換履歴CSV出力</button>
+    <div style="margin-top:20px;">
+      <h3>ランキング</h3>
+      <div id="rankingList" class="list"></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <h3>交換履歴</h3>
+      <div id="exchangeHistoryList" class="list"></div>
+      <button onclick="exportExchangeHistoryCSV()">履歴CSV出力</button>
+    </div>
+<hr style="margin:20px 0;">
+
+<h3>手動シフト追加（救済用）</h3>
+
+<div class="row">
+  <input id="manualShiftName" placeholder="シフト苗字（例：山田）">
+  <input id="manualShiftDate" type="date">
+</div>
+
+<div style="margin-top:10px;">
+  <button onclick="addManualShift()">この日を出勤扱いにする</button>
+</div>
+  </div>
+
+</section>
 <script>
 const ADMIN_CODE = "3963233187";
 const STORAGE_KEY = "shukkinQuestData_v3";
@@ -516,13 +581,14 @@ function ensureTodayRecord(code){
 /* ================= LOGIN ================= */
 
 function login(){
-playDecision();
-  const code=document.getElementById("loginCode").value.trim();
+  playDecision();
+
+  const code = document.getElementById("loginCode").value.trim();
   if(!code) return alert("コードを入力してください");
 
-  if(code===ADMIN_CODE){
-    isAdmin=true;
-    currentUser=null;
+  if(code === ADMIN_CODE){
+    isAdmin = true;
+    currentUser = null;
     showAdmin();
     return;
   }
@@ -531,14 +597,17 @@ playDecision();
     return alert("登録されていません");
   }
 
-  currentUser=code;
-  isAdmin=false;
+  currentUser = code;
+  isAdmin = false;
+
   ensureTodayRecord(code);
-if(!isShiftDay()){
-  playMiss();
-  showDQMessage("きょうは やすみのひ だった！");
-}
-  showEmployee();
+
+  showEmployee();   // ← 先に画面切り替え
+
+  if(!isShiftDay()){
+    playMiss();
+    showDQMessage("きょうは やすみのひ だった！");
+  }
 }
 
 function logout(){
@@ -551,24 +620,33 @@ function logout(){
 /* ================= VIEW ================= */
 
 function show(id){
-  ["viewLogin","viewEmployee","viewAdmin"].forEach(v=>{
+
+  const views=["viewLogin","viewEmployee","viewAdmin"];
+
+  views.forEach(v=>{
     const el=document.getElementById(v);
-    if(el) el.classList.add("hidden");
+    if(!el) return;
+    el.classList.add("hidden");
   });
-  document.getElementById(id).classList.remove("hidden");
+
+  const target=document.getElementById(id);
+  if(target){
+    target.classList.remove("hidden");
+  }
+
+  window.scrollTo(0,0);
 }
 
 function showAdmin(){
-  document.getElementById("headerRight").textContent="管理者";
   show("viewAdmin");
   showTab("adminEmployees");
   renderAdmin();
 }
 
 function showEmployee(){
-  document.getElementById("headerRight").textContent="従業員："+state.employees[currentUser].name;
   renderEmployee();
   show("viewEmployee");
+  showEmpTab("empQuest"); // ←追加
 }
 
 function showTab(id){
@@ -598,7 +676,9 @@ const earned = emp.totalEarned || 0;
 const levelData = getLevelInfo(earned);
 
 document.getElementById("levelInfo").innerHTML =
-  `Lv.${levelData.level} 【${levelData.title}】`;
+  `Lv.${levelData.level}　
+   ${emp.name}　
+   【${levelData.title}】`;
 
 document.getElementById("expInfo").textContent =
   `累計経験値：${earned} XP`;
@@ -1335,6 +1415,18 @@ function showDQMessage(text){
   setTimeout(()=>{
     box.remove();
   },3000);
+}
+function showEmpTab(id){
+playCursor();
+
+  const tabs = ["empQuest","empShop","empRanking"];
+
+  tabs.forEach(t=>{
+    const el = document.getElementById(t);
+    if(el) el.classList.add("hidden");
+  });
+
+  document.getElementById(id).classList.remove("hidden");
 }
 </script>
 </body>
