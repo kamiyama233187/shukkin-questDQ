@@ -307,6 +307,7 @@ input{
       <button onclick="showEmpTab('empQuest')">クエスト</button>
       <button onclick="showEmpTab('empShop')">ポイント交換</button>
       <button onclick="showEmpTab('empRanking')">ランキング</button>
+<button onclick="showEmpTab('empTitles')">称号</button>
     </div>
   </div>
 
@@ -327,7 +328,11 @@ input{
     <h3>ランキング</h3>
     <div id="rankingListEmployee" class="list"></div>
   </div>
-
+<!-- ===== 称号タブ ===== -->
+<div id="empTitles" class="card hidden">
+  <h3>獲得称号</h3>
+  <div id="titleList" class="list"></div>
+</div>
   <div class="card">
     <button onclick="logout()">ログアウト</button>
   </div>
@@ -478,6 +483,41 @@ input{
 <script>
 const ADMIN_CODE = "3963233187";
 const STORAGE_KEY = "shukkinQuestData_v3";
+/* ================= TITLE MASTER ================= */
+
+const TITLE_MASTER = {
+
+  perfect1:{
+    name:"完全攻略者",
+    description:"クエストを1日全制覇した証。",
+    type:"perfect"
+  },
+
+  perfect10:{
+    name:"完璧主義勇者",
+    description:"全制覇を10回達成した猛者。",
+    type:"perfect"
+  },
+
+  continue3:{
+    name:"駆け出し勤勉者",
+    description:"3日連続出勤を達成した。",
+    type:"continue"
+  },
+
+  night5:{
+    name:"夜の番人",
+    description:"夜勤を5回こなした。",
+    type:"night"
+  },
+
+  secret_first:{
+    name:"目覚めし者",
+    description:"はじめてログインした。",
+    type:"secret"
+  }
+
+};
 
 /* ================= STATE ================= */
 
@@ -570,6 +610,9 @@ Object.values(state.employees).forEach(emp=>{
   if(!state.shiftOverrides) state.shiftOverrides = {};
   if(!state.exchangeHistory) state.exchangeHistory = [];
 if(!state.history) state.history = {};
+Object.values(state.employees).forEach(emp=>{
+  if(!emp.titles) emp.titles = [];
+});
 
   // 日付更新チェック
   if(!state.today || state.today.date !== todayStr()){
@@ -654,8 +697,9 @@ function showAdmin(){
 
 function showEmployee(){
   renderEmployee();
+  renderTitles();   // ←追加
   show("viewEmployee");
-  showEmpTab("empQuest"); // ←追加
+  showEmpTab("empQuest");
 }
 
 function showTab(id){
@@ -753,6 +797,7 @@ btn.onclick=()=>toggleQuest(q.id);
 
   showRewardShop();
 renderEmployeeRanking();
+renderTitles();
 }
 
 
@@ -771,7 +816,8 @@ function addEmployee(){
   name,
   shiftName:shift,
   totalPoints:0,
-  totalEarned:0   // ⭐追加
+  totalEarned:0,
+  titles:[]   // ← 追加
 };
    save();
   renderAdmin();
@@ -1411,6 +1457,38 @@ function renderEmployeeRanking(){
   });
 }
 
+function renderTitles(){
+
+  const container = document.getElementById("titleList");
+  if(!container || !currentUser) return;
+
+  container.innerHTML = "";
+
+  const emp = state.employees[currentUser];
+  if(!emp.titles || emp.titles.length === 0){
+    container.innerHTML = "<div>まだ称号を持っていない。</div>";
+    return;
+  }
+
+  emp.titles.forEach(id=>{
+
+    const master = TITLE_MASTER[id];
+    if(!master) return;
+
+    const row = document.createElement("div");
+    row.className = "item";
+    row.style.cursor = "pointer";
+
+    row.innerHTML = `<div>🏅 ${master.name}</div>`;
+
+    row.onclick = ()=>{
+      showDQMessage(master.description);
+    };
+
+    container.appendChild(row);
+  });
+}
+
 function getLevelInfo(total){
 
   let level = 1;
@@ -1449,6 +1527,24 @@ function playLevelUpSound(){
   audio.play().catch(err=>{
     console.log("音再生エラー", err);
   });
+}
+
+function giveTitle(code, titleId){
+
+  const emp = state.employees[code];
+  if(!emp) return;
+
+  if(!emp.titles.includes(titleId)){
+
+    emp.titles.push(titleId);
+    save();
+
+    const master = TITLE_MASTER[titleId];
+
+    if(master){
+      showDQMessage(`🏅 ${master.name} を てにいれた！`);
+    }
+  }
 }
 
 function toggleQuest(id){
@@ -1490,6 +1586,9 @@ function toggleQuest(id){
     showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
 
     const allDone = state.quests.every(q => rec.checked[q.id]);
+if(allDone){
+  giveTitle(currentUser, "perfect1");
+}
 
     if(allDone){
 
@@ -1559,7 +1658,7 @@ function showDQMessage(text){
 function showEmpTab(id){
 playCursor();
 
-  const tabs = ["empQuest","empShop","empRanking"];
+  const tabs = ["empQuest","empShop","empRanking","empTitles"];
 
   tabs.forEach(t=>{
     const el = document.getElementById(t);
