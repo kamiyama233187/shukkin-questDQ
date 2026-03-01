@@ -530,8 +530,8 @@ function todayStr(){
 
   const d = new Date();
 
-  // ⭐ 朝6時より前は「前日扱い」
-  if(d.getHours() < 6){
+  // ⭐ 朝7時より前は「前日扱い」
+  if(d.getHours() < 7){
     d.setDate(d.getDate() - 1);
   }
 
@@ -1103,21 +1103,23 @@ function backspace(){
 
 load();
 show("viewLogin");
+
 function isShiftDay(){
 
   const emp = state.employees[currentUser];
   if(!emp || !emp.shiftName) return false;
 
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,"/");
+  // ⭐ ここを変更
+  const today = todayStr().replace(/-/g,"/");
   const name = emp.shiftName.trim();
 
-  // ① 手動優先
+  // 手動優先
   if(state.shiftOverrides[name] &&
      state.shiftOverrides[name][today]){
     return true;
   }
 
-  // ② CSV判定
+  // CSV判定
   if(state.shiftTable[name] &&
      state.shiftTable[name][today]){
     return true;
@@ -1125,6 +1127,7 @@ function isShiftDay(){
 
   return false;
 }
+
 function parseShiftCSV(text){
 
   const rows = text.split("\n").map(r=>r.split(","));
@@ -1495,14 +1498,15 @@ function confirmFullReset(){
     location.reload();
   },1500);
 }
+
 setInterval(() => {
 
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
 
-  // 6:00ちょうど
-  if(hour === 6 && minute === 0){
+  // 7:00～7:01の間に実行
+  if(hour === 7 && minute < 2){
 
     showDQMessage("あたらしい いちにちが はじまった！");
 
@@ -1511,7 +1515,8 @@ setInterval(() => {
     },2000);
   }
 
-}, 60000); // 1分ごとにチェック
+}, 60000);
+
 </script>
 </body>
 </html>
