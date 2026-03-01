@@ -1495,6 +1495,23 @@ function confirmFullReset(){
     location.reload();
   },1500);
 }
+setInterval(() => {
+
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+
+  // 6:00ちょうど
+  if(hour === 6 && minute === 0){
+
+    showDQMessage("あたらしい いちにちが はじまった！");
+
+    setTimeout(()=>{
+      location.reload();
+    },2000);
+  }
+
+}, 60000); // 1分ごとにチェック
 </script>
 </body>
 </html>
