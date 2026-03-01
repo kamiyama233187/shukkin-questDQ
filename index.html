@@ -1107,7 +1107,7 @@ function isShiftDay(){
   const emp = state.employees[currentUser];
   if(!emp || !emp.shiftName) return false;
 
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,"/");
+  const today = new Date().toISOString().slice(0,3).replace(/-/g,"/");
   const name = emp.shiftName.trim();
 
   // ① 手動優先
@@ -1218,21 +1218,29 @@ function renderRanking(){
   container.innerHTML="";
 
   const arr = Object.entries(state.employees)
-    .map(([code,emp])=>({code,name:emp.name,pt:emp.totalPoints||0}))
-    .sort((a,b)=>b.pt-a.pt);
+    .map(([code,emp])=>({
+      code,
+      name:emp.name,
+      pt:emp.totalPoints||0
+    }))
+    .sort((a,b)=>b.pt-a.pt)
+    .slice(0,3);   // ← ここ追加
 
   arr.forEach((e,i)=>{
     const row = document.createElement("div");
     row.className="item";
+
     row.innerHTML = `
       <div>
         ${i+1}位 🏆 ${e.name}（${e.code}）
         <span class="badge">${e.pt}pt</span>
       </div>
     `;
+
     container.appendChild(row);
   });
 }
+
 function renderEmployeeRanking(){
 
   const container = document.getElementById("rankingListEmployee");
