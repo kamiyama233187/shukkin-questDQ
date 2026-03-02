@@ -336,6 +336,56 @@ input{
   0%{ background-position:0% 0%; }
   100%{ background-position:200% 0%; }
 }
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.modalBox{
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  width:320px;
+  max-width:90%;
+}
+
+.modalHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.modalActions{
+  margin-top:15px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+.closeBtn{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+}
+
+#versionDisplay{
+  position:fixed;
+  bottom:8px;
+  right:12px;
+  font-size:11px;
+  opacity:0.6;
+  pointer-events:none;
+}
+
 </style>
 </head>
 <body>
@@ -442,6 +492,7 @@ input{
       <button onclick="showTab('adminRewards')">景品</button>
       <button onclick="showTab('adminData')">データ</button>
 <button onclick="showTab('adminHistory')">履歴</button>
+<button onclick="showTab('adminVersion')">バージョン</button>
     </div>
 
     <div style="margin-top:10px;">
@@ -554,8 +605,19 @@ input{
 <hr style="margin:20px 0;">
 
 <div id="adminHistory" class="card hidden">
+
   <h3>日別履歴</h3>
   <div id="historyList" class="list"></div>
+</div>
+<div id="adminVersion" class="card hidden">
+
+  <h3>バージョン情報</h3>
+  <div id="currentVersion"></div>
+
+  <div style="margin-top:12px;">
+    <h4>アップデート履歴</h4>
+    <div id="versionHistoryList" class="list"></div>
+  </div>
 </div>
 
 <h3>手動シフト追加（救済用）</h3>
@@ -577,9 +639,36 @@ input{
 </button>
 
 </section>
+
+<div id="versionDisplay"></div>
+
+<script>
+  ...
+  document.getElementById("versionDisplay")
+    .textContent = "v" + APP_VERSION;
+</script>
 <script>
 const ADMIN_CODE = "3963233187";
 const STORAGE_KEY = "shukkinQuestData_v3";
+const APP_VERSION = "1.0.1";
+const VERSION_HISTORY = [
+  {
+    version: "1.0.1",
+    date: "2026-03-03",
+    content: [
+      "バージョン表示機能追加",
+      "編集モーダル実装"
+    ]
+  },
+  {
+    version: "1.0.0",
+    date: "2026-03-02",
+    content: [
+      "出勤クエスト基本機能完成"
+    ]
+  }
+];
+
 
 /* ================= TITLE MASTER ================= */
 
@@ -952,7 +1041,8 @@ function showEmployee(){
 }
 
 function showTab(id){
- ["adminEmployees","adminQuests","adminRewards","adminData","adminHistory"].forEach(t=>{
+ ["adminEmployees","adminQuests","adminRewards","adminData","adminHistory","adminVersion"]
+.forEach(t=>{
     const el=document.getElementById(t);
     if(el) el.classList.add("hidden");
   });
@@ -960,6 +1050,9 @@ function showTab(id){
  if(id === "adminHistory"){
     renderHistory();
   }
+if(id === "adminVersion"){
+  renderVersionInfo();
+}
 }
 
 /* ================= EMPLOYEE ================= */
@@ -1193,6 +1286,29 @@ function renderAdmin(){
       </div>
     `;
 
+const edit = document.createElement("button");
+edit.textContent = "編集";
+
+edit.onclick = ()=>{
+
+  openModal({
+    title:"従業員編集",
+    fields:[
+      { label:"名前", key:"name", value:emp.name },
+      { label:"シフト苗字", key:"shiftName", value:emp.shiftName }
+    ],
+    onSave:(data)=>{
+      emp.name = data.name.trim();
+      emp.shiftName = data.shiftName.trim();
+      save();
+      renderAdmin();
+    }
+  });
+
+};
+
+row.appendChild(edit);
+
     const del = document.createElement("button");
     del.textContent = "削除";
     del.className = "warn";
@@ -1225,6 +1341,32 @@ function renderAdmin(){
           <span class="badge">${q.points}pt</span>
         </div>
       `;
+
+const edit = document.createElement("button");
+edit.textContent = "編集";
+
+edit.onclick = ()=>{
+
+  openModal({
+    title:"クエスト編集",
+    fields:[
+      { label:"クエスト名", key:"title", value:q.title },
+      { label:"ポイント", key:"points", value:q.points }
+    ],
+    onSave:(data)=>{
+
+      q.title = data.title.trim();
+      q.points = parseInt(data.points,10) || 0;
+
+      save();
+      renderAdmin();
+      renderEmployee(); // 表示中の人にも反映
+    }
+  });
+
+};
+
+row.appendChild(edit);
 
       const del = document.createElement("button");
       del.textContent = "削除";
@@ -1267,6 +1409,32 @@ function renderAdminRewards(){
         <span class="badge">${r.cost}pt</span>
       </div>
     `;
+
+const edit = document.createElement("button");
+edit.textContent = "編集";
+
+edit.onclick = ()=>{
+
+  openModal({
+    title:"景品編集",
+    fields:[
+      { label:"景品名", key:"title", value:r.title },
+      { label:"必要ポイント", key:"cost", value:r.cost }
+    ],
+    onSave:(data)=>{
+
+      r.title = data.title.trim();
+      r.cost = parseInt(data.cost,10) || 0;
+
+      save();
+      renderAdminRewards();
+      showRewardShop(); // 従業員画面にも反映
+    }
+  });
+
+};
+
+row.appendChild(edit);
 
     const del = document.createElement("button");
     del.textContent = "削除";
@@ -2360,23 +2528,34 @@ function confirmFullReset(){
   },1500);
 }
 
+let backupDone = false;
+
 setInterval(() => {
 
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
 
-  // 7:00～7:01の間に実行
-  if(hour === 7 && minute < 2){
+  if(hour === 7 && minute < 2 && !backupDone){
 
-    showDQMessage("あたらしい いちにちが はじまった！");
+    backupDone = true; // ← 二重防止
+
+    autoBackup();
+
+    showDQMessage("あたらしいあさがはじまった！");
 
     setTimeout(()=>{
       location.reload();
     },2000);
   }
 
+  // 7:02以降でリセット
+  if(hour !== 7){
+    backupDone = false;
+  }
+
 }, 60000);
+
 function checkStreakTitles(streak){
 
   if(streak >= 30){
@@ -2507,6 +2686,124 @@ function openEmployeeImport(){
   input.click();
 }
 
+function autoBackup(){
+
+  const today = todayStr();
+  const filename = `backup_${today}.json`;
+
+  const blob = new Blob(
+    [JSON.stringify(state,null,2)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  console.log("自動バックアップ完了:", filename);
+}
+
+let modalConfig = null;
+
+function openModal(config){
+
+  modalConfig = config;
+
+  document.getElementById("modalTitle").textContent =
+    config.title;
+
+  const body = document.getElementById("modalBody");
+  body.innerHTML = "";
+
+  config.fields.forEach(field=>{
+
+    const wrapper = document.createElement("div");
+    wrapper.style.marginBottom="10px";
+
+    wrapper.innerHTML = `
+      <div style="font-size:13px;margin-bottom:4px;">
+        ${field.label}
+      </div>
+      <input type="text"
+             id="modal_${field.key}"
+             value="${field.value}"
+             style="width:100%;padding:6px;border-radius:6px;">
+    `;
+
+    body.appendChild(wrapper);
+  });
+
+  document.getElementById("editModal")
+    .classList.remove("hidden");
+}
+
+function closeModal(){
+  document.getElementById("editModal")
+    .classList.add("hidden");
+  modalConfig = null;
+}
+
+function saveModal(){
+
+  if(!modalConfig) return;
+
+  const data = {};
+
+  modalConfig.fields.forEach(field=>{
+    data[field.key] =
+      document.getElementById("modal_"+field.key).value;
+  });
+
+  modalConfig.onSave(data);
+
+  closeModal();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const v = document.getElementById("versionDisplay");
+  if(v){
+    v.textContent = "v" + APP_VERSION;
+  }
+});
+
+function renderVersionInfo(){
+
+  const current = document.getElementById("currentVersion");
+  const list = document.getElementById("versionHistoryList");
+
+  if(!current || !list) return;
+
+  current.innerHTML = `
+    <strong>現在のバージョン：</strong> v${APP_VERSION}
+  `;
+
+  list.innerHTML = "";
+
+  VERSION_HISTORY.forEach(v=>{
+
+    const box = document.createElement("div");
+    box.className = "card";
+
+    box.innerHTML = `
+      <strong>v${v.version}</strong>（${v.date}）
+    `;
+
+    v.content.forEach(c=>{
+      const item = document.createElement("div");
+      item.style.fontSize="13px";
+      item.textContent = "・" + c;
+      box.appendChild(item);
+    });
+
+    list.appendChild(box);
+  });
+}
+
 </script>
 
 <input id="employeeImportFile"
@@ -2514,6 +2811,24 @@ function openEmployeeImport(){
        accept="application/json"
        style="position:fixed; top:-1000px;"
        onchange="importEmployeesOnly(this.files[0])">
+
+<div id="editModal" class="modal hidden">
+  <div class="modalBox">
+
+    <div class="modalHeader">
+      <h3 id="modalTitle"></h3>
+      <button class="closeBtn" onclick="closeModal()">✕</button>
+    </div>
+
+    <div id="modalBody"></div>
+
+    <div class="modalActions">
+      <button class="primary" onclick="saveModal()">保存</button>
+      <button class="ghost" onclick="closeModal()">取消</button>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
