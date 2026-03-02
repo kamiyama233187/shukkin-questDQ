@@ -522,6 +522,15 @@ input{
     <input id="importFile" type="file" accept="application/json">
     <button onclick="importData()">JSON読み込み</button>
 <hr style="margin:20px 0;">
+<hr style="margin:20px 0;">
+<h3>従業員専用インポート</h3>
+
+<button onclick="openEmployeeImport()">従業員JSON読み込み</button>
+<input id="employeeImportFile"
+       type="file"
+       accept="application/json"
+       style="display:none"
+       onchange="importEmployeesOnly(this.files[0])">
 
 <h3>CSV機能</h3>
 
@@ -2426,7 +2435,71 @@ function checkMasterTitle(code){
     giveTitle(code, "secret_master");
   }
 }
+function openEmployeeImport(){
+  document.getElementById("employeeImportFile").click();
+}
 
+function importEmployeesOnly(file){
+
+  if(!file){
+    alert("ファイルを選択してください");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+
+      if(!Array.isArray(data)){
+        alert("従業員配列形式のJSONではありません");
+        return;
+      }
+
+      if(!confirm("従業員データをすべて置き換えます。よろしいですか？")){
+        return;
+      }
+
+      // 🔥 既存従業員リセット
+      state.employees = {};
+      state.today.progress = {};
+
+      data.forEach(emp=>{
+
+        const code = String(emp.id);
+
+        state.employees[code] = {
+          name: emp.name,
+          shiftName: emp.shiftName,
+          totalPoints: 0,
+          totalEarned: 0,
+          streak: 0,
+          lastClearDate: null,
+          nightCount: 0,
+          perfectCount: 0,
+          firstLoginDone: false,
+          titles: [],
+          equippedTitle:{
+            type:"level",
+            level:1
+          }
+        };
+
+      });
+
+      save();
+      renderAdmin();
+
+      alert("従業員データ読み込み成功");
+
+    }catch(e){
+      alert("読み込み失敗");
+    }
+  };
+
+  reader.readAsText(file);
+}
 </script>
 </body>
 </html>
