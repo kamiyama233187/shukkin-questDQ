@@ -866,6 +866,19 @@ return;
   isAdmin = false;
 
   ensureTodayRecord(code);
+
+// 🔥 念のため今日データを保証
+if(!state.today.progress){
+  state.today.progress = {};
+}
+
+if(!state.today.progress[code]){
+  state.today.progress[code] = {
+    checked:{},
+    todayPoints:0
+  };
+}
+
 const emp = state.employees[code];
 
 if(!emp.firstLoginDone){
