@@ -1684,15 +1684,17 @@ function renderRanking(){
     const row = document.createElement("div");
     row.className="item";
 
-    row.innerHTML = `
-      <div>
-        ${i+1}位 🏆 ${e.name}
-        <div class="${rarityClass}" style="font-size:12px;">
-          【${titleText}】
-        </div>
-        <span class="badge">${e.pt}pt</span>
-      </div>
-    `;
+   const levelData = getLevelInfo(emp.totalEarned || 0);
+
+row.innerHTML = `
+  <div>
+    ${i+1}位 🏆 Lv.${levelData.level} ${e.name}
+    <div class="${rarityClass}" style="font-size:12px;">
+      【${titleText}】
+    </div>
+    <span class="badge">${e.pt}pt</span>
+  </div>
+`;
 
     container.appendChild(row);
   });
@@ -1748,7 +1750,9 @@ function renderEmployeeRanking(){
 
     row.innerHTML = `
       <div>
-        ${i+1}位 ${e.name}
+       const levelData = getLevelInfo(emp.totalEarned || 0);
+
+${i+1}位 Lv.${levelData.level} ${e.name}
         <div class="${rarityClass}" style="font-size:12px;">
           【${titleText}】
         </div>
@@ -1783,45 +1787,58 @@ function renderTitles(){
 
   container.innerHTML = "";
 
-// ===== レベル称号 =====
+// ===== レベル称号一覧 =====
 
-const levelData = getLevelInfo(emp.totalEarned || 0);
+const currentLevel = getLevelInfo(emp.totalEarned || 0).level;
 
-const levelRow = document.createElement("div");
-levelRow.className = "item";
-levelRow.style.cursor = "pointer";
+const levelMilestones = [10,30,50,70,90];
 
-levelRow.innerHTML = `
-  <div class="title-R">
-    ⭐ Lv.${levelData.level}称号
-    【${levelData.title}】
-  </div>
-`;
+levelMilestones.forEach(lv=>{
 
-const levelEquipBtn = document.createElement("button");
-levelEquipBtn.textContent = "装備";
+  if(currentLevel < lv) return; // 未到達は出さない
 
-levelEquipBtn.onclick = (e)=>{
-  e.stopPropagation();
+  const row = document.createElement("div");
+  row.className = "item";
+  row.style.cursor = "pointer";
 
-  emp.equippedTitle = {
-    type:"level",
-    level:levelData.level
+  let rarityClass = "title-R";
+
+  if(lv >= 90) rarityClass="title-UR";
+  else if(lv >= 70) rarityClass="title-SSR";
+  else if(lv >= 50) rarityClass="title-SR";
+
+  row.innerHTML = `
+    <div class="${rarityClass}">
+      ⭐ Lv.${lv}称号
+      【${getTitle(lv)}】
+    </div>
+  `;
+
+  const equipBtn = document.createElement("button");
+  equipBtn.textContent = "装備";
+
+  equipBtn.onclick = (e)=>{
+    e.stopPropagation();
+
+    emp.equippedTitle = {
+      type:"level",
+      level:lv
+    };
+
+    save();
+
+    renderTitles();
+    renderEmployee();
+    renderEmployeeRanking();
+    renderRanking();
+
+    showDQMessage(`Lv.${lv}称号を装備した！`);
   };
 
-  save();
+  row.appendChild(equipBtn);
+  container.appendChild(row);
 
-  renderTitles();
-  renderEmployee();
-  renderEmployeeRanking();  // ⭐追加
-  renderRanking();          // ⭐追加
-
-  showDQMessage("レベル称号を装備した！");
-};
-
-
-levelRow.appendChild(levelEquipBtn);
-container.appendChild(levelRow);
+});
 
   // ===== 称号表示 =====
   if(emp.titles && emp.titles.length > 0){
