@@ -483,9 +483,12 @@ input{
 <script>
 const ADMIN_CODE = "3963233187";
 const STORAGE_KEY = "shukkinQuestData_v3";
+
 /* ================= TITLE MASTER ================= */
 
 const TITLE_MASTER = {
+
+  /* ===== パーフェクト系 ===== */
 
   perfect1:{
     name:"完全攻略者",
@@ -493,118 +496,91 @@ const TITLE_MASTER = {
     type:"perfect"
   },
 
-  perfect10:{
-    name:"完璧主義勇者",
-    description:"全制覇を10回達成した猛者。",
-    type:"perfect"
+  perfect5:{
+    name:"熟練攻略者",
+    description:"全制覇を5回達成した。",
+    type:"perfect_total"
   },
 
-  continue3:{
-    name:"駆け出し勤勉者",
-    description:"3日連続出勤を達成した。",
+  perfect10:{
+    name:"完全支配者",
+    description:"全制覇を10回達成した。",
+    type:"perfect_total"
+  },
+
+  perfect30:{
+    name:"伝説の制覇王",
+    description:"30回の完全制覇を成し遂げた。",
+    type:"perfect_total"
+  },
+
+  /* ===== 連続系 ===== */
+
+  streak3:{
+    name:"まじめな冒険者",
+    description:"3日連続で全制覇した。",
     type:"continue"
   },
 
+  streak7:{
+    name:"鉄人冒険者",
+    description:"7日連続で全制覇した。",
+    type:"continue"
+  },
+
+  streak30:{
+    name:"伝説の皆勤王",
+    description:"30日連続で全制覇した。",
+    type:"continue"
+  },
+
+  /* ===== 夜勤系 ===== */
+
   night5:{
     name:"夜の番人",
-    description:"夜勤を5回こなした。",
+    description:"深夜の全制覇を5回達成した。",
     type:"night"
   },
 
-  secret_first:{
+  night20:{
+    name:"闇の守護者",
+    description:"夜勤全制覇を20回達成した。",
+    type:"night"
+  },
+
+  night50:{
+    name:"常夜の支配者",
+    description:"50回の深夜制覇を成し遂げた伝説の存在。",
+    type:"night"
+  },
+
+  /* ===== 隠し称号 ===== */
+
+  secret_firstLogin:{
     name:"目覚めし者",
     description:"はじめてログインした。",
     type:"secret"
   },
-streak3:{
-  name:"まじめな冒険者",
-  description:"3日連続で全制覇した"
-},
 
-streak7:{
-  name:"鉄人冒険者",
-  description:"7日連続で全制覇した"
-},
+  secret_noPoint:{
+    name:"無一文",
+    description:"ポイント不足で交換に失敗した。",
+    type:"secret"
+  },
 
-streak30:{
-  name:"伝説の皆勤王",
-  description:"30日連続で全制覇した"
-},
+  secret_earlyBird:{
+    name:"夜明けの勇者",
+    description:"7時ちょうどにログインした。",
+    type:"secret"
+  },
 
-streak3:{
-  name:"まじめな冒険者",
-  description:"3日連続で全制覇した"
-},
+  /* ===== 真称号 ===== */
 
-streak7:{
-  name:"鉄人冒険者",
-  description:"7日連続で全制覇した"
-},
-
-streak30:{
-  name:"伝説の皆勤王",
-  description:"30日連続で全制覇した"
-},
-
-night5:{
-  name:"夜の番人",
-  description:"深夜の全制覇を5回達成した。",
-  type:"night"
-},
-
-night20:{
-  name:"闇の守護者",
-  description:"夜勤全制覇を20回達成した。",
-  type:"night"
-},
-
-night50:{
-  name:"常夜の支配者",
-  description:"50回の深夜制覇を成し遂げた伝説の存在。",
-  type:"night"
-},
-
-perfect5:{
-  name:"熟練攻略者",
-  description:"全制覇を5回達成した。",
-  type:"perfect_total"
-},
-
-perfect10:{
-  name:"完全支配者",
-  description:"全制覇を10回達成した。",
-  type:"perfect_total"
-},
-
-perfect30:{
-  name:"伝説の制覇王",
-  description:"30回の完全制覇を成し遂げた。",
-  type:"perfect_total"
-},
-
-secret_firstLogin:{
-  name:"目覚めし者",
-  description:"はじめてログインした。",
-  type:"secret"
-},
-
-secret_noPoint:{
-  name:"無一文",
-  description:"ポイント不足で交換に失敗した。",
-  type:"secret"
-},
-
-secret_earlyBird:{
-  name:"夜明けの勇者",
-  description:"7時ちょうどにログインした。",
-  type:"secret"
-},
-
-secret_master:{
-  name:"真の勇者",
-  description:"すべての称号を集めた究極の存在。",
-  type:"secret"
-}
+  secret_master:{
+    name:"真の勇者",
+    description:"すべての称号を集めた究極の存在。",
+    type:"secret"
+  }
 
 };
 
@@ -933,16 +909,17 @@ function addEmployee(){
   if(!code||!name||!shift) return alert("入力してください");
   if(state.employees[code]) return alert("既に存在します");
 
- state.employees[code]={
+state.employees[code]={
   name,
   shiftName:shift,
   totalPoints:0,
   totalEarned:0,
   streak:0,
   lastClearDate:null,
-nightCount:0
-perfectCount:0,
-firstLoginDone:false,
+  nightCount:0,
+  perfectCount:0,
+  firstLoginDone:false,
+  titles:[]
 };
 
    save();
