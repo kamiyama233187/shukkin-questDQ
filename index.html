@@ -957,12 +957,30 @@ function showTab(id){
 
 function renderEmployee(){
 
-  if(!currentUser) return;   // ← これ超重要
+  if(!currentUser) return;
+
+  // 🔥 完全保証
+  if(!state.today){
+    state.today = {
+      date: todayStr(),
+      progress:{}
+    };
+  }
+
+  if(!state.today.progress){
+    state.today.progress = {};
+  }
+
+  if(!state.today.progress[currentUser]){
+    state.today.progress[currentUser] = {
+      checked:{},
+      todayPoints:0
+    };
+  }
 
   const rec = state.today.progress[currentUser];
-  if(!rec) return;
-
   const emp = state.employees[currentUser];
+
   if(!emp) return;
 
   document.getElementById("todayPoints").textContent = rec.todayPoints;
