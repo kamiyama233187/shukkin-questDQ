@@ -936,9 +936,13 @@ function showAdmin(){
 }
 
 function showEmployee(){
-  renderEmployee();
-  renderTitles();   // ←追加
+
+  // 🔥 先に画面を出す
   show("viewEmployee");
+
+  // そのあと描画
+  renderEmployee();
+  renderTitles();
   showEmpTab("empQuest");
 }
 
