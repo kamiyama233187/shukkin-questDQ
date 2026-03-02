@@ -526,11 +526,7 @@ input{
 <h3>従業員専用インポート</h3>
 
 <button onclick="openEmployeeImport()">従業員JSON読み込み</button>
-<input id="employeeImportFile"
-       type="file"
-       accept="application/json"
-       style="display:none"
-       onchange="importEmployeesOnly(this.files[0])">
+
 
 <h3>CSV機能</h3>
 
@@ -2501,7 +2497,13 @@ function importEmployeesOnly(file){
 
   reader.readAsText(file);
 }
-
 </script>
+
+<input id="employeeImportFile"
+       type="file"
+       accept="application/json"
+       style="position:fixed; top:-1000px;"
+       onchange="importEmployeesOnly(this.files[0])">
+
 </body>
 </html>
