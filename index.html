@@ -813,22 +813,6 @@ function load(){
   }
 }
 
-function getYesterdayStr(){
-
-  const d = new Date();
-
-  if(d.getHours() < 7){
-    d.setDate(d.getDate() - 1);
-  }
-
-  d.setDate(d.getDate() - 1);
-
-  return d.getFullYear() + "-" +
-         String(d.getMonth()+1).padStart(2,"0") + "-" +
-         String(d.getDate()).padStart(2,"0");
-}
-}
-
 function ensureTodayRecord(code){
   if(!state.today.progress[code]){
     state.today.progress[code]={checked:{},todayPoints:0};
