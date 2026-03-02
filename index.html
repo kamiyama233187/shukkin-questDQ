@@ -764,103 +764,52 @@ function save(){
 }
 
 function load(){
-  const raw=localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY);
 
   if(raw){
     try{
       state = JSON.parse(raw);
     }catch(e){}
   }
-Object.values(state.employees).forEach(emp=>{
-  if(emp.totalEarned === undefined){
-    emp.totalEarned = emp.totalPoints || 0;
+
+  // ===== 配列だった場合の自動修正 =====
+  if(Array.isArray(state.employees)){
+    const fixed = {};
+    state.employees.forEach(emp=>{
+      const code = String(emp.id);
+      fixed[code] = emp;
+    });
+    state.employees = fixed;
+    save();
   }
-});
-  // ⭐ ここが保険
+
+  // ===== 不足データ補完 =====
   if(!state.rewards) state.rewards = [];
   if(!state.shiftTable) state.shiftTable = {};
   if(!state.shiftOverrides) state.shiftOverrides = {};
   if(!state.exchangeHistory) state.exchangeHistory = [];
-if(!state.history) state.history = {};
-Object.values(state.employees).forEach(emp=>{
-  if(!emp.titles) emp.titles = [];
-if(emp.streak === undefined) emp.streak = 0;
-if(emp.lastClearDate === undefined) emp.lastClearDate = null;
-if(emp.nightCount === undefined) emp.nightCount = 0;
-if(emp.perfectCount === undefined) emp.perfectCount = 0;
-if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
-if(emp.equippedTitle === undefined){
-  emp.equippedTitle = {
-    type: "level",
-      level: 1
-    };
-  }
-});
+  if(!state.history) state.history = {};
 
-
-  // 日付更新チェック
-  if(!state.today || state.today.date !== todayStr()){
-    resetToday(false);
-  }
-function load(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-
-  if(raw){
-    try{
-      state = JSON.parse(raw);
-    }catch(e){}
-  }
-
-// ===== 配列だった場合の自動修正 =====
-if(Array.isArray(state.employees)){
-
-  const fixed = {};
-
-  state.employees.forEach(emp=>{
-    const code = String(emp.id);
-    fixed[code] = emp;
+  Object.values(state.employees).forEach(emp=>{
+    if(emp.totalEarned === undefined){
+      emp.totalEarned = emp.totalPoints || 0;
+    }
+    if(!emp.titles) emp.titles = [];
+    if(emp.streak === undefined) emp.streak = 0;
+    if(emp.lastClearDate === undefined) emp.lastClearDate = null;
+    if(emp.nightCount === undefined) emp.nightCount = 0;
+    if(emp.perfectCount === undefined) emp.perfectCount = 0;
+    if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
+    if(emp.equippedTitle === undefined){
+      emp.equippedTitle = {
+        type: "level",
+        level: 1
+      };
+    }
   });
 
-  state.employees = fixed;
-  save();
-}
-
-Object.values(state.employees).forEach(emp=>{
-  if(emp.totalEarned === undefined){
-    emp.totalEarned = emp.totalPoints || 0;
-  }
-});
-  // ⭐ ここが保険
-  if(!state.rewards) state.rewards = [];
-  if(!state.shiftTable) state.shiftTable = {};
-  if(!state.shiftOverrides) state.shiftOverrides = {};
-  if(!state.exchangeHistory) state.exchangeHistory = [];
-if(!state.history) state.history = {};
-Object.values(state.employees).forEach(emp=>{
-  if(!emp.titles) emp.titles = [];
-if(emp.streak === undefined) emp.streak = 0;
-if(emp.lastClearDate === undefined) emp.lastClearDate = null;
-if(emp.nightCount === undefined) emp.nightCount = 0;
-if(emp.perfectCount === undefined) emp.perfectCount = 0;
-if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
-if(emp.equippedTitle === undefined){
-  emp.equippedTitle = {
-    type: "level",
-      level: 1
-    };
-  }
-});
-
-
-  // 日付更新チェック
   if(!state.today || state.today.date !== todayStr()){
     resetToday(false);
-  }
-}
-
-function ensureTodayRecord(code){
-  if(!state.today.progress[code]){
-    state.today.progress[code]={checked:{},todayPoints:0};
   }
 }
 
