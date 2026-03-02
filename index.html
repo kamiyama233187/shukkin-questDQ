@@ -789,7 +789,11 @@ if(emp.lastClearDate === undefined) emp.lastClearDate = null;
 if(emp.nightCount === undefined) emp.nightCount = 0;
 if(emp.perfectCount === undefined) emp.perfectCount = 0;
 if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
+if(emp.equippedTitle === undefined){
+  emp.equippedTitle = null;
+}
 });
+
 
   // 日付更新チェック
   if(!state.today || state.today.date !== todayStr()){
@@ -941,10 +945,19 @@ function renderEmployee(){
 const earned = emp.totalEarned || 0;
 const levelData = getLevelInfo(earned);
 
+let displayTitle;
+
+if(emp.equippedTitle){
+  const master = TITLE_MASTER[emp.equippedTitle];
+  displayTitle = master ? master.name : levelData.title;
+}else{
+  displayTitle = levelData.title;
+}
+
 document.getElementById("levelInfo").innerHTML =
   `Lv.${levelData.level}　
    ${emp.name}　
-   【${levelData.title}】`;
+   【${displayTitle}】`;
 
 document.getElementById("expInfo").textContent =
   `累計経験値：${earned} XP`;
@@ -1032,7 +1045,8 @@ state.employees[code]={
   nightCount:0,
   perfectCount:0,
   firstLoginDone:false,
-  titles:[]
+  titles:[],
+  equippedTitle:null   // ←追加
 };
 
    save();
@@ -1606,6 +1620,7 @@ function exportExchangeHistoryCSV(){
   a.click();
   URL.revokeObjectURL(url);
 }
+
 function renderRanking(){
 
   const container = document.getElementById("rankingList");
@@ -1626,12 +1641,28 @@ function renderRanking(){
     const row = document.createElement("div");
     row.className="item";
 
+    const emp = state.employees[e.code];
+
+let titleText = "";
+
+if(emp.equippedTitle){
+  const master = TITLE_MASTER[emp.equippedTitle];
+  if(master){
+    titleText = master.name;
+  }
+}else{
+  const levelInfo = getLevelInfo(emp.totalEarned || 0);
+  titleText = levelInfo.title;
+}
     row.innerHTML = `
-      <div>
-        ${i+1}位 🏆 ${e.name}（${e.code}）
-        <span class="badge">${e.pt}pt</span>
-      </div>
-    `;
+  <div>
+    ${i+1}位 🏆 ${e.name}
+    <div style="font-size:12px;opacity:0.8;">
+      【${titleText}】
+    </div>
+    <span class="badge">${e.pt}pt</span>
+  </div>
+`;
 
     container.appendChild(row);
   });
@@ -1711,6 +1742,23 @@ function renderTitles(){
         `<div class="title-${master.rarity}">
           🏅 ${master.name} 【${master.rarity}】
         </div>`;
+
+const equipBtn = document.createElement("button");
+equipBtn.textContent = "装備";
+
+equipBtn.onclick = (e)=>{
+  e.stopPropagation(); // 説明ポップアップ防止
+
+  state.employees[currentUser].equippedTitle = id;
+
+  save();
+  renderTitles();
+  renderEmployee();
+
+  showDQMessage("称号を装備した！");
+};
+
+row.appendChild(equipBtn);
 
       row.onclick = ()=>{
         showDQMessage(master.description);
