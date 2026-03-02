@@ -257,6 +257,85 @@ input{
 .title-SR  { color:#facc15; }      /* 金 */
 .title-SSR { color:#f472b6; }      /* ピンク */
 .title-UR  { color:#a78bfa; }      /* 紫 */
+
+.title-appear{
+  animation: titlePop 0.4s ease forwards;
+  opacity:0;
+}
+
+@keyframes titlePop{
+  from{
+    transform:translateY(10px) scale(0.9);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0) scale(1);
+    opacity:1;
+  }
+}
+/* ===== レア度演出 ===== */
+
+.title-R{
+  color:#7dd3fc;
+}
+
+.title-SR{
+  color:#facc15;
+  animation: glowSR 1.5s ease-in-out infinite alternate;
+}
+
+.title-SSR{
+  color:#f472b6;
+  animation: glowSSR 1s ease-in-out infinite alternate;
+}
+
+.title-UR{
+  background:linear-gradient(90deg,#a855f7,#f0abfc,#a855f7);
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  animation:
+    glowUR 0.6s ease-in-out infinite alternate,
+    rainbow 2s linear infinite;
+}
+
+/* --- SR：ほんのり --- */
+@keyframes glowSR{
+  from{ text-shadow:0 0 4px gold; }
+  to{   text-shadow:0 0 12px gold; }
+}
+
+/* --- SSR：強め --- */
+@keyframes glowSSR{
+  from{
+    text-shadow:0 0 6px #ff66cc;
+  }
+  to{
+    text-shadow:0 0 18px #ff66cc,
+                 0 0 30px #ff1493;
+  }
+}
+
+/* --- UR：激しく --- */
+@keyframes glowUR{
+  from{
+    text-shadow:
+      0 0 10px #a855f7,
+      0 0 20px #9333ea;
+  }
+  to{
+    text-shadow:
+      0 0 20px #c084fc,
+      0 0 40px #a855f7,
+      0 0 60px #9333ea;
+  }
+}
+
+@keyframes rainbow{
+  0%{ background-position:0% 0%; }
+  100%{ background-position:200% 0%; }
+}
 </style>
 </head>
 <body>
@@ -1625,7 +1704,7 @@ function renderTitles(){
       if(!master) return;
 
       const row = document.createElement("div");
-      row.className = "item";
+      row.className = "item title-appear";
       row.style.cursor = "pointer";
 
       row.innerHTML =
