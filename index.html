@@ -253,6 +253,10 @@ input{
     max-width:none;
   }
 }
+.title-R   { color:#7dd3fc; }      /* 青 */
+.title-SR  { color:#facc15; }      /* 金 */
+.title-SSR { color:#f472b6; }      /* ピンク */
+.title-UR  { color:#a78bfa; }      /* 紫 */
 </style>
 </head>
 <body>
@@ -331,8 +335,16 @@ input{
 <!-- ===== 称号タブ ===== -->
 <div id="empTitles" class="card hidden">
   <h3>獲得称号</h3>
+
+  <div id="titleProgress"></div>
+
+  <div id="titleBarWrap" style="border:1px solid #fff; height:12px; margin:8px 0;">
+    <div id="titleBar" style="height:100%; width:0%; background:#fff;"></div>
+  </div>
+
   <div id="titleList" class="list"></div>
 </div>
+
   <div class="card">
     <button onclick="logout()">ログアウト</button>
   </div>
@@ -487,32 +499,36 @@ const STORAGE_KEY = "shukkinQuestData_v3";
 
 /* ================= TITLE MASTER ================= */
 
-const TITLE_MASTER = {
+cconst TITLE_MASTER = {
 
   /* ===== パーフェクト系 ===== */
 
   perfect1:{
     name:"完全攻略者",
     description:"クエストを1日全制覇した証。",
-    type:"perfect"
+    type:"perfect",
+    rarity:"R"
   },
 
   perfect5:{
     name:"熟練攻略者",
     description:"全制覇を5回達成した。",
-    type:"perfect_total"
+    type:"perfect_total",
+    rarity:"R"
   },
 
   perfect10:{
     name:"完全支配者",
     description:"全制覇を10回達成した。",
-    type:"perfect_total"
+    type:"perfect_total",
+    rarity:"SR"
   },
 
   perfect30:{
     name:"伝説の制覇王",
     description:"30回の完全制覇を成し遂げた。",
-    type:"perfect_total"
+    type:"perfect_total",
+    rarity:"SSR"
   },
 
   /* ===== 連続系 ===== */
@@ -520,19 +536,22 @@ const TITLE_MASTER = {
   streak3:{
     name:"まじめな冒険者",
     description:"3日連続で全制覇した。",
-    type:"continue"
+    type:"continue",
+    rarity:"R"
   },
 
   streak7:{
     name:"鉄人冒険者",
     description:"7日連続で全制覇した。",
-    type:"continue"
+    type:"continue",
+    rarity:"SR"
   },
 
   streak30:{
     name:"伝説の皆勤王",
     description:"30日連続で全制覇した。",
-    type:"continue"
+    type:"continue",
+    rarity:"SSR"
   },
 
   /* ===== 夜勤系 ===== */
@@ -540,19 +559,22 @@ const TITLE_MASTER = {
   night5:{
     name:"夜の番人",
     description:"深夜の全制覇を5回達成した。",
-    type:"night"
+    type:"night",
+    rarity:"R"
   },
 
   night20:{
     name:"闇の守護者",
     description:"夜勤全制覇を20回達成した。",
-    type:"night"
+    type:"night",
+    rarity:"SR"
   },
 
   night50:{
     name:"常夜の支配者",
     description:"50回の深夜制覇を成し遂げた伝説の存在。",
-    type:"night"
+    type:"night",
+    rarity:"SSR"
   },
 
   /* ===== 隠し称号 ===== */
@@ -560,19 +582,22 @@ const TITLE_MASTER = {
   secret_firstLogin:{
     name:"目覚めし者",
     description:"はじめてログインした。",
-    type:"secret"
+    type:"secret",
+    rarity:"R"
   },
 
   secret_noPoint:{
     name:"無一文",
     description:"ポイント不足で交換に失敗した。",
-    type:"secret"
+    type:"secret",
+    rarity:"R"
   },
 
   secret_earlyBird:{
     name:"夜明けの勇者",
     description:"7時ちょうどにログインした。",
-    type:"secret"
+    type:"secret",
+    rarity:"SR"
   },
 
   /* ===== 真称号 ===== */
@@ -580,7 +605,8 @@ const TITLE_MASTER = {
   secret_master:{
     name:"真の勇者",
     description:"すべての称号を集めた究極の存在。",
-    type:"secret"
+    type:"secret",
+    rarity:"UR"
   }
 
 };
@@ -599,6 +625,7 @@ history:{},
 };
 
 let currentUser=null;
+let devMode = false;
 let isAdmin=false;
 
 /* ===== サウンド ===== */
@@ -718,6 +745,12 @@ function login(){
   playDecision();
 
   const code = document.getElementById("loginCode").value.trim();
+if(code === "12231489"){
+  devMode = true;
+  showDQMessage("🛠 開発者モード ON");
+  document.getElementById("loginCode").value="";
+  return;
+}
   if(!code){
   showDQMessage("コードを いれてください！");
   return;
@@ -1565,12 +1598,94 @@ function renderTitles(){
   const container = document.getElementById("titleList");
   if(!container || !currentUser) return;
 
+  const emp = state.employees[currentUser];
+
+  const progressText = document.getElementById("titleProgress");
+  const bar = document.getElementById("titleBar");
+
+  const totalTitles = Object.keys(TITLE_MASTER)
+    .filter(id => id !== "secret_master").length;
+
+  const owned = emp.titles ? emp.titles.length : 0;
+
+  const percent = Math.floor((owned / totalTitles) * 100);
+
+  progressText.innerHTML =
+    `称号コンプ率：${owned} / ${totalTitles}（${percent}%）`;
+
+  bar.style.width = percent + "%";
+
   container.innerHTML = "";
 
-  const emp = state.employees[currentUser];
   if(!emp.titles || emp.titles.length === 0){
     container.innerHTML = "<div>まだ称号を持っていない。</div>";
     return;
+// ===== 開発者モード =====
+if(devMode){
+
+  const devBox = document.createElement("div");
+  devBox.style.marginTop = "12px";
+  devBox.style.borderTop = "1px solid #666";
+  devBox.style.paddingTop = "8px";
+
+  devBox.innerHTML = `
+    <div style="color:#f66;">🛠 開発者モード</div>
+  `;
+
+  // 全称号解放
+  const btnAll = document.createElement("button");
+  btnAll.textContent = "全称号解放";
+  btnAll.onclick = ()=>{
+    Object.keys(TITLE_MASTER).forEach(id=>{
+      giveTitle(currentUser, id);
+    });
+  };
+
+  // レベルテスト
+  const btnLv = document.createElement("button");
+  btnLv.textContent = "レベル+500XP";
+  btnLv.onclick = ()=>{
+    const emp = state.employees[currentUser];
+    emp.totalEarned += 500;
+    save();
+    renderEmployee();
+  };
+
+  // ストリーク強制
+  const btnStreak = document.createElement("button");
+  btnStreak.textContent = "ストリーク30";
+  btnStreak.onclick = ()=>{
+    const emp = state.employees[currentUser];
+    emp.streak = 30;
+    checkStreakTitles(30);
+  };
+
+  // 夜勤テスト
+  const btnNight = document.createElement("button");
+  btnNight.textContent = "夜勤50";
+  btnNight.onclick = ()=>{
+    const emp = state.employees[currentUser];
+    emp.nightCount = 50;
+    checkNightTitles(50);
+  };
+
+  // パーフェクト回数
+  const btnPerfect = document.createElement("button");
+  btnPerfect.textContent = "完全制覇30";
+  btnPerfect.onclick = ()=>{
+    const emp = state.employees[currentUser];
+    emp.perfectCount = 30;
+    checkPerfectTitles(30);
+  };
+
+  devBox.appendChild(btnAll);
+  devBox.appendChild(btnLv);
+  devBox.appendChild(btnStreak);
+  devBox.appendChild(btnNight);
+  devBox.appendChild(btnPerfect);
+
+  container.appendChild(devBox);
+}
   }
 
   emp.titles.forEach(id=>{
@@ -1582,7 +1697,10 @@ function renderTitles(){
     row.className = "item";
     row.style.cursor = "pointer";
 
-    row.innerHTML = `<div>🏅 ${master.name}</div>`;
+    row.innerHTML =
+      `<div class="title-${master.rarity}">
+        🏅 ${master.name} 【${master.rarity}】
+      </div>`;
 
     row.onclick = ()=>{
       showDQMessage(master.description);
@@ -1632,6 +1750,7 @@ function playLevelUpSound(){
   });
 }
 
+
 function giveTitle(code, titleId){
 
   const emp = state.employees[code];
@@ -1640,16 +1759,36 @@ function giveTitle(code, titleId){
   if(!emp.titles.includes(titleId)){
 
     emp.titles.push(titleId);
-
     save();
 
     const master = TITLE_MASTER[titleId];
+    if(!master) return;
 
-    if(master){
-      showDQMessage(`🏅 ${master.name} を てにいれた！`);
+    // ⭐ レア度別演出
+    let duration = 3000;
+    let effect = "";
+
+    if(master.rarity === "SR"){
+      duration = 4000;
+      effect = "✨ ";
     }
 
-    // ⭐ ここ追加（即時反映）
+    if(master.rarity === "SSR"){
+      duration = 5000;
+      effect = "🌟🌟 ";
+    }
+
+    if(master.rarity === "UR"){
+      duration = 6000;
+      effect = "👑✨ ";
+      playLevelUpSound(); // 特別音
+    }
+
+    showDQMessage(
+      `${effect}🏅 ${master.name} 【${master.rarity}】 を てにいれた！`,
+      duration
+    );
+
     if(code === currentUser){
       renderTitles();
     }
@@ -1781,7 +1920,8 @@ function showSimpleNotice(text){
     notice.remove();
   },2000);
 }
-function showDQMessage(text){
+
+function showDQMessage(text, duration = 3000){
 
   const old = document.getElementById("dqMessage");
   if(old) old.remove();
@@ -1795,8 +1935,9 @@ function showDQMessage(text){
 
   setTimeout(()=>{
     box.remove();
-  },3000);
+  }, duration);
 }
+
 function showEmpTab(id){
 playCursor();
 
