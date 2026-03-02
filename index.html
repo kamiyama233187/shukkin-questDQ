@@ -2497,6 +2497,16 @@ function importEmployeesOnly(file){
 
   reader.readAsText(file);
 }
+
+function openEmployeeImport(){
+  const input = document.getElementById("employeeImportFile");
+  if(!input){
+    alert("file input が見つかりません");
+    return;
+  }
+  input.click();
+}
+
 </script>
 
 <input id="employeeImportFile"
