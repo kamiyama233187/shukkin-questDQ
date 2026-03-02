@@ -1639,6 +1639,7 @@ function giveTitle(code, titleId){
   if(!emp.titles.includes(titleId)){
 
     emp.titles.push(titleId);
+
     save();
 
     const master = TITLE_MASTER[titleId];
@@ -1646,7 +1647,13 @@ function giveTitle(code, titleId){
     if(master){
       showDQMessage(`🏅 ${master.name} を てにいれた！`);
     }
-checkMasterTitle(code);
+
+    // ⭐ ここ追加（即時反映）
+    if(code === currentUser){
+      renderTitles();
+    }
+
+    checkMasterTitle(code);
   }
 }
 
