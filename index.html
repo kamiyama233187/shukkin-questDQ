@@ -790,9 +790,11 @@ if(emp.nightCount === undefined) emp.nightCount = 0;
 if(emp.perfectCount === undefined) emp.perfectCount = 0;
 if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
 if(emp.equippedTitle === undefined){
-  emp.equippedTitle = null;
+  emp.equippedTitle = {
+    type: "level",
+    level: 1
+  };
 }
-});
 
 
   // 日付更新チェック
@@ -945,12 +947,22 @@ function renderEmployee(){
 const earned = emp.totalEarned || 0;
 const levelData = getLevelInfo(earned);
 
-let displayTitle;
+
+let displayTitle = "";
 
 if(emp.equippedTitle){
-  const master = TITLE_MASTER[emp.equippedTitle];
-  displayTitle = master ? master.name : levelData.title;
+
+  if(emp.equippedTitle.type === "title"){
+    const master = TITLE_MASTER[emp.equippedTitle.id];
+    displayTitle = master ? master.name : "";
+  }
+
+  if(emp.equippedTitle.type === "level"){
+    displayTitle = getTitle(emp.equippedTitle.level);
+  }
+
 }else{
+  const levelData = getLevelInfo(emp.totalEarned || 0);
   displayTitle = levelData.title;
 }
 
@@ -1046,7 +1058,10 @@ state.employees[code]={
   perfectCount:0,
   firstLoginDone:false,
   titles:[],
-  equippedTitle:null   // ←追加
+  equippedTitle:{
+    type:"level",
+    level:1 // ←追加
+}
 };
 
    save();
@@ -1635,34 +1650,48 @@ function renderRanking(){
       pt:emp.totalPoints||0
     }))
     .sort((a,b)=>b.pt-a.pt)
-    .slice(0,3);   // ← ここ追加
+    .slice(0,3);
 
   arr.forEach((e,i)=>{
-    const row = document.createElement("div");
-    row.className="item";
 
     const emp = state.employees[e.code];
 
-let titleText = "";
+    let titleText = "";
+    let rarityClass = "title-R";
 
-if(emp.equippedTitle){
-  const master = TITLE_MASTER[emp.equippedTitle];
-  if(master){
-    titleText = master.name;
-  }
-}else{
-  const levelInfo = getLevelInfo(emp.totalEarned || 0);
-  titleText = levelInfo.title;
-}
+    if(emp.equippedTitle){
+
+      if(emp.equippedTitle.type === "title"){
+        const master = TITLE_MASTER[emp.equippedTitle.id];
+        if(master){
+          titleText = master.name;
+          rarityClass = "title-" + master.rarity;
+        }
+      }
+
+      if(emp.equippedTitle.type === "level"){
+        titleText = getTitle(emp.equippedTitle.level);
+
+        const lv = emp.equippedTitle.level;
+        if(lv >= 90) rarityClass="title-UR";
+        else if(lv >= 70) rarityClass="title-SSR";
+        else if(lv >= 50) rarityClass="title-SR";
+      }
+
+    }
+
+    const row = document.createElement("div");
+    row.className="item";
+
     row.innerHTML = `
-  <div>
-    ${i+1}位 🏆 ${e.name}
-    <div style="font-size:12px;opacity:0.8;">
-      【${titleText}】
-    </div>
-    <span class="badge">${e.pt}pt</span>
-  </div>
-`;
+      <div>
+        ${i+1}位 🏆 ${e.name}
+        <div class="${rarityClass}" style="font-size:12px;">
+          【${titleText}】
+        </div>
+        <span class="badge">${e.pt}pt</span>
+      </div>
+    `;
 
     container.appendChild(row);
   });
@@ -1692,12 +1721,67 @@ function renderEmployeeRanking(){
       row.style.background = "#1e3a8a";
     }
 
-    row.innerHTML = `
-      <div>
-        ${i+1}位 ${e.name}
-        <span class="badge">${e.pt}pt</span>
-      </div>
-    `;
+  const emp = state.employees[e.code];
+
+let titleText = "";
+let rarityClass = "";
+
+if(emp.equippedTitle){
+  const master = TITLE_MASTER[emp.equippedTitle];
+  if(master){
+    titleText = master.name;
+    rarityClass = "title-" + master.rarity;
+  }
+}else{
+  const levelInfo = getLevelInfo(emp.totalEarned || 0);
+  titleText = levelInfo.title;
+  const lv = emp.equippedTitle.level;
+
+if(lv >= 90){
+  rarityClass = "title-UR";
+}else if(lv >= 70){
+  rarityClass = "title-SSR";
+}else if(lv >= 50){
+  rarityClass = "title-SR";
+}else{
+  rarityClass = "title-R";
+} // レベル称号は通常色
+}
+
+const emp = state.employees[e.code];
+
+let titleText = "";
+let rarityClass = "title-R";
+
+if(emp.equippedTitle){
+
+  if(emp.equippedTitle.type === "title"){
+    const master = TITLE_MASTER[emp.equippedTitle.id];
+    if(master){
+      titleText = master.name;
+      rarityClass = "title-" + master.rarity;
+    }
+  }
+
+  if(emp.equippedTitle.type === "level"){
+    titleText = getTitle(emp.equippedTitle.level);
+    rarityClass = "title-R"
+  }
+
+}else{
+  const levelInfo = getLevelInfo(emp.totalEarned || 0);
+  titleText = levelInfo.title;
+}
+
+row.innerHTML = `
+  <div>
+    ${i+1}位 ${e.name}
+    <div class="${rarityClass}" style="font-size:12px;">
+      【${titleText}】
+    </div>
+    <span class="badge">${e.pt}pt</span>
+  </div>
+`;
 
     container.appendChild(row);
   });
@@ -1726,6 +1810,46 @@ function renderTitles(){
 
   container.innerHTML = "";
 
+// ===== レベル称号 =====
+
+const levelData = getLevelInfo(emp.totalEarned || 0);
+
+const levelRow = document.createElement("div");
+levelRow.className = "item";
+levelRow.style.cursor = "pointer";
+
+levelRow.innerHTML = `
+  <div class="title-R">
+    ⭐ Lv.${levelData.level}称号
+    【${levelData.title}】
+  </div>
+`;
+
+const levelEquipBtn = document.createElement("button");
+levelEquipBtn.textContent = "装備";
+
+levelEquipBtn.onclick = (e)=>{
+  e.stopPropagation();
+
+  emp.equippedTitle = {
+    type:"level",
+    level:levelData.level
+  };
+
+  save();
+
+  renderTitles();
+  renderEmployee();
+  renderEmployeeRanking();  // ⭐追加
+  renderRanking();          // ⭐追加
+
+  showDQMessage("レベル称号を装備した！");
+};
+};
+
+levelRow.appendChild(levelEquipBtn);
+container.appendChild(levelRow);
+
   // ===== 称号表示 =====
   if(emp.titles && emp.titles.length > 0){
 
@@ -1747,13 +1871,21 @@ const equipBtn = document.createElement("button");
 equipBtn.textContent = "装備";
 
 equipBtn.onclick = (e)=>{
-  e.stopPropagation(); // 説明ポップアップ防止
+  e.stopPropagation();
 
-  state.employees[currentUser].equippedTitle = id;
+  const emp = state.employees[currentUser];
+
+  emp.equippedTitle = {
+    type:"title",
+    id:id
+  };
 
   save();
+
   renderTitles();
   renderEmployee();
+  renderEmployeeRanking();  // ⭐追加
+  renderRanking();          // ⭐管理画面用
 
   showDQMessage("称号を装備した！");
 };
