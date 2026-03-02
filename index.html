@@ -1734,12 +1734,20 @@ function renderEmployeeRanking(){
 
       if(emp.equippedTitle.type === "level"){
         titleText = getTitle(emp.equippedTitle.level);
+
+        const lv = emp.equippedTitle.level;
+        if(lv >= 90) rarityClass="title-UR";
+        else if(lv >= 70) rarityClass="title-SSR";
+        else if(lv >= 50) rarityClass="title-SR";
       }
 
     }else{
       const levelInfo = getLevelInfo(emp.totalEarned || 0);
       titleText = levelInfo.title;
     }
+
+    // ⭐ ここで先にレベル取得
+    const levelData = getLevelInfo(emp.totalEarned || 0);
 
     const row = document.createElement("div");
     row.className="item";
@@ -1750,9 +1758,7 @@ function renderEmployeeRanking(){
 
     row.innerHTML = `
       <div>
-       const levelData = getLevelInfo(emp.totalEarned || 0);
-
-${i+1}位 Lv.${levelData.level} ${e.name}
+        ${i+1}位 Lv.${levelData.level} ${e.name}
         <div class="${rarityClass}" style="font-size:12px;">
           【${titleText}】
         </div>
