@@ -1385,7 +1385,10 @@ function importData(){
       if(Array.isArray(data)){
 
         data.forEach(emp=>{
-          state.employees[String(emp.id)] = {
+
+          const code = String(emp.id); // ←ここ超重要
+
+          state.employees[code] = {
             name: emp.name,
             shiftName: emp.shiftName,
             totalPoints: 0,
@@ -1401,6 +1404,7 @@ function importData(){
               level:1
             }
           };
+
         });
 
       }else{
