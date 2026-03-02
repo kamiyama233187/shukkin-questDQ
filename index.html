@@ -2435,9 +2435,6 @@ function checkMasterTitle(code){
     giveTitle(code, "secret_master");
   }
 }
-function openEmployeeImport(){
-  document.getElementById("employeeImportFile").click();
-}
 
 function importEmployeesOnly(file){
 
@@ -2452,8 +2449,15 @@ function importEmployeesOnly(file){
     try{
       const data = JSON.parse(reader.result);
 
-      if(!Array.isArray(data)){
-        alert("従業員配列形式のJSONではありません");
+      let employeesArray = null;
+
+      // 🔥 両対応
+      if(Array.isArray(data)){
+        employeesArray = data;
+      }else if(Array.isArray(data.employees)){
+        employeesArray = data.employees;
+      }else{
+        alert("従業員データ形式ではありません");
         return;
       }
 
@@ -2461,11 +2465,10 @@ function importEmployeesOnly(file){
         return;
       }
 
-      // 🔥 既存従業員リセット
       state.employees = {};
       state.today.progress = {};
 
-      data.forEach(emp=>{
+      employeesArray.forEach(emp=>{
 
         const code = String(emp.id);
 
@@ -2485,12 +2488,10 @@ function importEmployeesOnly(file){
             level:1
           }
         };
-
       });
 
       save();
       renderAdmin();
-
       alert("従業員データ読み込み成功");
 
     }catch(e){
@@ -2500,6 +2501,7 @@ function importEmployeesOnly(file){
 
   reader.readAsText(file);
 }
+
 </script>
 </body>
 </html>
