@@ -479,6 +479,15 @@ input{
         style="background:#300; border-color:#f00; color:#f88;">
   ⚠ 全データ削除
 </button>
+
+<hr style="margin:20px 0;">
+<h3>開発テスト用</h3>
+
+<button onclick="giveAllTitlesToCurrent()"
+        style="background:#222; border-color:#0ff; color:#0ff;">
+  🧪 全称号テスト付与
+</button>
+
 </section>
 <script>
 const ADMIN_CODE = "3963233187";
@@ -1738,6 +1747,7 @@ if(hour < 7){
 
         // 勝利音後さらに間
         setTimeout(()=>{
+
           if(newLevel > oldLevel){
             showLevelUpPopup(newLevel);
           }
@@ -1939,6 +1949,23 @@ function checkMasterTitle(code){
   if(hasAll){
     giveTitle(code, "secret_master");
   }
+}
+function giveAllTitlesToCurrent(){
+
+  if(!currentUser){
+    alert("従業員でログインしてください");
+    return;
+  }
+
+  const allIds = Object.keys(TITLE_MASTER);
+
+  allIds.forEach(id=>{
+    giveTitle(currentUser, id);
+  });
+
+  renderTitles();
+
+  showDQMessage("🧪 全称号を付与した！");
 }
 </script>
 </body>
