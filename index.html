@@ -499,7 +499,7 @@ const STORAGE_KEY = "shukkinQuestData_v3";
 
 /* ================= TITLE MASTER ================= */
 
-cconst TITLE_MASTER = {
+const TITLE_MASTER = {
 
   /* ===== パーフェクト系 ===== */
 
@@ -1607,7 +1607,6 @@ function renderTitles(){
     .filter(id => id !== "secret_master").length;
 
   const owned = emp.titles ? emp.titles.length : 0;
-
   const percent = Math.floor((owned / totalTitles) * 100);
 
   progressText.innerHTML =
@@ -1617,97 +1616,105 @@ function renderTitles(){
 
   container.innerHTML = "";
 
-  if(!emp.titles || emp.titles.length === 0){
-    container.innerHTML = "<div>まだ称号を持っていない。</div>";
-    return;
-// ===== 開発者モード =====
-if(devMode){
+  // ===== 称号表示 =====
+  if(emp.titles && emp.titles.length > 0){
 
-  const devBox = document.createElement("div");
-  devBox.style.marginTop = "12px";
-  devBox.style.borderTop = "1px solid #666";
-  devBox.style.paddingTop = "8px";
+    emp.titles.forEach(id=>{
 
-  devBox.innerHTML = `
-    <div style="color:#f66;">🛠 開発者モード</div>
-  `;
+      const master = TITLE_MASTER[id];
+      if(!master) return;
 
-  // 全称号解放
-  const btnAll = document.createElement("button");
-  btnAll.textContent = "全称号解放";
-  btnAll.onclick = ()=>{
-    Object.keys(TITLE_MASTER).forEach(id=>{
-      giveTitle(currentUser, id);
+      const row = document.createElement("div");
+      row.className = "item";
+      row.style.cursor = "pointer";
+
+      row.innerHTML =
+        `<div class="title-${master.rarity}">
+          🏅 ${master.name} 【${master.rarity}】
+        </div>`;
+
+      row.onclick = ()=>{
+        showDQMessage(master.description);
+      };
+
+      container.appendChild(row);
     });
-  };
 
-  // レベルテスト
-  const btnLv = document.createElement("button");
-  btnLv.textContent = "レベル+500XP";
-  btnLv.onclick = ()=>{
-    const emp = state.employees[currentUser];
-    emp.totalEarned += 500;
-    save();
-    renderEmployee();
-  };
-
-  // ストリーク強制
-  const btnStreak = document.createElement("button");
-  btnStreak.textContent = "ストリーク30";
-  btnStreak.onclick = ()=>{
-    const emp = state.employees[currentUser];
-    emp.streak = 30;
-    checkStreakTitles(30);
-  };
-
-  // 夜勤テスト
-  const btnNight = document.createElement("button");
-  btnNight.textContent = "夜勤50";
-  btnNight.onclick = ()=>{
-    const emp = state.employees[currentUser];
-    emp.nightCount = 50;
-    checkNightTitles(50);
-  };
-
-  // パーフェクト回数
-  const btnPerfect = document.createElement("button");
-  btnPerfect.textContent = "完全制覇30";
-  btnPerfect.onclick = ()=>{
-    const emp = state.employees[currentUser];
-    emp.perfectCount = 30;
-    checkPerfectTitles(30);
-  };
-
-  devBox.appendChild(btnAll);
-  devBox.appendChild(btnLv);
-  devBox.appendChild(btnStreak);
-  devBox.appendChild(btnNight);
-  devBox.appendChild(btnPerfect);
-
-  container.appendChild(devBox);
-}
+  }else{
+    container.innerHTML += "<div>まだ称号を持っていない。</div>";
   }
 
-  emp.titles.forEach(id=>{
+  // ===== 開発者モード =====
+  if(devMode){
 
-    const master = TITLE_MASTER[id];
-    if(!master) return;
+    const devBox = document.createElement("div");
+    devBox.style.marginTop = "12px";
+    devBox.style.borderTop = "1px solid #666";
+    devBox.style.paddingTop = "8px";
 
-    const row = document.createElement("div");
-    row.className = "item";
-    row.style.cursor = "pointer";
+    devBox.innerHTML =
+      `<div style="color:#f66;">🛠 開発者モード</div>`;
 
-    row.innerHTML =
-      `<div class="title-${master.rarity}">
-        🏅 ${master.name} 【${master.rarity}】
-      </div>`;
-
-    row.onclick = ()=>{
-      showDQMessage(master.description);
+// 全称号開放
+    const btnAll = document.createElement("button");
+    btnAll.textContent = "全称号解放";
+    btnAll.onclick = ()=>{
+      Object.keys(TITLE_MASTER).forEach(id=>{
+        giveTitle(currentUser, id);
+      });
     };
 
-    container.appendChild(row);
-  });
+// 経験値追加
+    const btnLv = document.createElement("button");
+    btnLv.textContent = "レベル+500XP";
+    btnLv.onclick = ()=>{
+      const emp = state.employees[currentUser];
+      emp.totalEarned += 500;
+      save();
+      renderEmployee();
+    };
+
+// 連続称号
+const btnStreak = document.createElement("button");
+btnStreak.textContent = "連続30";
+btnStreak.onclick = ()=>{
+  const emp = state.employees[currentUser];
+  emp.streak = 30;
+  checkStreakTitles(emp.streak);
+  save();
+  renderTitles();
+};
+
+// 夜勤テスト
+const btnNight = document.createElement("button");
+btnNight.textContent = "夜勤50";
+btnNight.onclick = ()=>{
+  const emp = state.employees[currentUser];
+  emp.nightCount = 50;
+  checkNightTitles(emp.nightCount);
+  save();
+  renderTitles();
+};
+
+// パーフェクト回数
+const btnPerfect = document.createElement("button");
+btnPerfect.textContent = "完全制覇30";
+btnPerfect.onclick = ()=>{
+  const emp = state.employees[currentUser];
+  emp.perfectCount = 30;
+  checkPerfectTitles(emp.perfectCount);
+  save();
+  renderTitles();
+};
+
+devBox.appendChild(btnAll);
+devBox.appendChild(btnLv);
+devBox.appendChild(btnStreak);
+devBox.appendChild(btnNight);
+devBox.appendChild(btnPerfect);
+
+container.appendChild(devBox);
+}
 }
 
 function getLevelInfo(total){
