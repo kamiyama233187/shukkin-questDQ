@@ -515,7 +515,96 @@ const TITLE_MASTER = {
     name:"目覚めし者",
     description:"はじめてログインした。",
     type:"secret"
-  }
+  },
+streak3:{
+  name:"まじめな冒険者",
+  description:"3日連続で全制覇した"
+},
+
+streak7:{
+  name:"鉄人冒険者",
+  description:"7日連続で全制覇した"
+},
+
+streak30:{
+  name:"伝説の皆勤王",
+  description:"30日連続で全制覇した"
+},
+
+streak3:{
+  name:"まじめな冒険者",
+  description:"3日連続で全制覇した"
+},
+
+streak7:{
+  name:"鉄人冒険者",
+  description:"7日連続で全制覇した"
+},
+
+streak30:{
+  name:"伝説の皆勤王",
+  description:"30日連続で全制覇した"
+},
+
+night5:{
+  name:"夜の番人",
+  description:"深夜の全制覇を5回達成した。",
+  type:"night"
+},
+
+night20:{
+  name:"闇の守護者",
+  description:"夜勤全制覇を20回達成した。",
+  type:"night"
+},
+
+night50:{
+  name:"常夜の支配者",
+  description:"50回の深夜制覇を成し遂げた伝説の存在。",
+  type:"night"
+},
+
+perfect5:{
+  name:"熟練攻略者",
+  description:"全制覇を5回達成した。",
+  type:"perfect_total"
+},
+
+perfect10:{
+  name:"完全支配者",
+  description:"全制覇を10回達成した。",
+  type:"perfect_total"
+},
+
+perfect30:{
+  name:"伝説の制覇王",
+  description:"30回の完全制覇を成し遂げた。",
+  type:"perfect_total"
+},
+
+secret_firstLogin:{
+  name:"目覚めし者",
+  description:"はじめてログインした。",
+  type:"secret"
+},
+
+secret_noPoint:{
+  name:"無一文",
+  description:"ポイント不足で交換に失敗した。",
+  type:"secret"
+},
+
+secret_earlyBird:{
+  name:"夜明けの勇者",
+  description:"7時ちょうどにログインした。",
+  type:"secret"
+},
+
+secret_master:{
+  name:"真の勇者",
+  description:"すべての称号を集めた究極の存在。",
+  type:"secret"
+}
 
 };
 
@@ -612,6 +701,11 @@ Object.values(state.employees).forEach(emp=>{
 if(!state.history) state.history = {};
 Object.values(state.employees).forEach(emp=>{
   if(!emp.titles) emp.titles = [];
+if(emp.streak === undefined) emp.streak = 0;
+if(emp.lastClearDate === undefined) emp.lastClearDate = null;
+if(emp.nightCount === undefined) emp.nightCount = 0;
+if(emp.perfectCount === undefined) emp.perfectCount = 0;
+if(emp.firstLoginDone === undefined) emp.firstLoginDone = false;
 });
 
   // 日付更新チェック
@@ -625,6 +719,21 @@ function ensureTodayRecord(code){
     state.today.progress[code]={checked:{},todayPoints:0};
   }
 }
+function getYesterdayStr(){
+
+  const d = new Date();
+
+  if(d.getHours() < 7){
+    d.setDate(d.getDate() - 1);
+  }
+
+  d.setDate(d.getDate() - 1);
+
+  return d.getFullYear() + "-" +
+         String(d.getMonth()+1).padStart(2,"0") + "-" +
+         String(d.getDate()).padStart(2,"0");
+}
+
 
 /* ================= LOGIN ================= */
 
@@ -651,6 +760,18 @@ return;
   isAdmin = false;
 
   ensureTodayRecord(code);
+const emp = state.employees[code];
+
+if(!emp.firstLoginDone){
+  giveTitle(code, "secret_firstLogin");
+  emp.firstLoginDone = true;
+  save();
+}
+const now = new Date();
+
+if(now.getHours() === 7 && now.getMinutes() === 0){
+  giveTitle(code, "secret_earlyBird");
+}
 
   showEmployee();   // ← 先に画面切り替え
 
@@ -817,8 +938,13 @@ function addEmployee(){
   shiftName:shift,
   totalPoints:0,
   totalEarned:0,
-  titles:[]   // ← 追加
+  streak:0,
+  lastClearDate:null,
+nightCount:0
+perfectCount:0,
+firstLoginDone:false,
 };
+
    save();
   renderAdmin();
 
@@ -1017,13 +1143,11 @@ function showRewardShop(){
    const btn=document.createElement("button");
 
 if(pt < r.cost){
-  btn.textContent="ポイント不足";
-  btn.className="ghost";
-  btn.disabled=true;
+  btn.textContent="交換";
+  btn.className="primary";
 }else{
   btn.textContent="交換";
   btn.className="primary";
-  btn.disabled=false;
 }
 
 btn.onclick=()=>exchangeReward(r.id);
@@ -1039,7 +1163,8 @@ function exchangeReward(id){
 
   const emp = state.employees[currentUser];
 
-  if(emp.totalPoints < r.cost){
+if(emp.totalPoints < r.cost){
+  giveTitle(currentUser, "secret_noPoint");
   showDQMessage("ポイントが たりない！");
   return;
 }
@@ -1544,6 +1669,7 @@ function giveTitle(code, titleId){
     if(master){
       showDQMessage(`🏅 ${master.name} を てにいれた！`);
     }
+checkMasterTitle(code);
   }
 }
 
@@ -1585,9 +1711,39 @@ function toggleQuest(id){
 
     showDQMessage(`${q.title} を たおした！\n${q.points}ポイント えた！`);
 
-    const allDone = state.quests.every(q => rec.checked[q.id]);
+  const allDone = state.quests.every(q => rec.checked[q.id]);
+
 if(allDone){
+
   giveTitle(currentUser, "perfect1");
+
+  const emp = state.employees[currentUser];
+
+emp.perfectCount += 1;
+checkPerfectTitles(emp.perfectCount);
+
+  const today = todayStr();
+  const yesterday = getYesterdayStr();
+
+  if(emp.lastClearDate === yesterday){
+    emp.streak += 1;
+  }else{
+    emp.streak = 1;
+  }
+
+  emp.lastClearDate = today;
+
+const now = new Date();
+const hour = now.getHours();
+
+if(hour < 7){
+  emp.nightCount += 1;
+  checkNightTitles(emp.nightCount);
+}
+
+  save();
+
+  checkStreakTitles(emp.streak);
 }
 
     if(allDone){
@@ -1746,7 +1902,60 @@ setInterval(() => {
   }
 
 }, 60000);
+function checkStreakTitles(streak){
 
+  if(streak >= 30){
+    giveTitle(currentUser, "streak30");
+  }
+  else if(streak >= 7){
+    giveTitle(currentUser, "streak7");
+  }
+  else if(streak >= 3){
+    giveTitle(currentUser, "streak3");
+  }
+}
+function checkNightTitles(count){
+
+  if(count >= 50){
+    giveTitle(currentUser, "night50");
+  }
+  else if(count >= 20){
+    giveTitle(currentUser, "night20");
+  }
+  else if(count >= 5){
+    giveTitle(currentUser, "night5");
+  }
+}
+function checkPerfectTitles(count){
+
+  if(count >= 30){
+    giveTitle(currentUser, "perfect30");
+  }
+  else if(count >= 10){
+    giveTitle(currentUser, "perfect10");
+  }
+  else if(count >= 5){
+    giveTitle(currentUser, "perfect5");
+  }
+}
+function checkMasterTitle(code){
+
+  const emp = state.employees[code];
+  if(!emp) return;
+
+  const owned = emp.titles || [];
+
+  // 全称号ID取得
+  const allTitles = Object.keys(TITLE_MASTER)
+    .filter(id => id !== "secret_master");
+
+  // 全部持っているか判定
+  const hasAll = allTitles.every(id => owned.includes(id));
+
+  if(hasAll){
+    giveTitle(code, "secret_master");
+  }
+}
 </script>
 </body>
 </html>
