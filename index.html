@@ -1374,16 +1374,48 @@ function exportData(){
 function importData(){
   const file=document.getElementById("importFile").files[0];
   if(!file) return alert("ファイル選択してください");
+
   const reader=new FileReader();
+
   reader.onload=()=>{
     try{
-      state=JSON.parse(reader.result);
+      const data = JSON.parse(reader.result);
+
+      // 👇 配列だった場合
+      if(Array.isArray(data)){
+
+        data.forEach(emp=>{
+          state.employees[String(emp.id)] = {
+            name: emp.name,
+            shiftName: emp.shiftName,
+            totalPoints: 0,
+            totalEarned: 0,
+            streak: 0,
+            lastClearDate: null,
+            nightCount: 0,
+            perfectCount: 0,
+            firstLoginDone: false,
+            titles: [],
+            equippedTitle:{
+              type:"level",
+              level:1
+            }
+          };
+        });
+
+      }else{
+        state = data;
+      }
+
       save();
       alert("読み込み成功");
       renderAdmin();
-    }catch(e){ alert("読み込み失敗"); }
+
+    }catch(e){
+      alert("読み込み失敗");
+    }
   };
-renderHistory();
+
   reader.readAsText(file);
 }
 
