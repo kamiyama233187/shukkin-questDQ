@@ -52,10 +52,27 @@ body{
 }
 
 .logo img{
-  max-width:80%;
+  max-width:70%;
   height:auto;
 }
 
+.backButton{
+  text-align:center;
+  margin-top:5px;
+}
+
+.backButton button{
+  background:black;
+  color:white;
+  border:1px solid white;
+  padding:8px 20px;
+  font-size:16px;
+}
+
+.backButton button:active{
+  background:white;
+  color:black;
+}
 </style>
 </head>
 
@@ -99,6 +116,12 @@ body{
 
 <div class="logo">
   <img src="shukkin_logo.png">
+</div>
+
+<div class="backButton">
+  <button onclick="location.href='index.html'">
+    もどる
+  </button>
 </div>
 
 </div>
